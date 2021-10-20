@@ -53,10 +53,12 @@ lemma mset_insort : ↑(ordered_insert r x xs) = multiset.cons x xs :=
 begin
   induction' xs, 
   { refl },
-  { simp [*],
+  { rewrite list.ordered_insert,
     split_ifs, 
     refl, 
-    sorry,
+    simp [←multiset.cons_coe], 
+    simp only [ih],
+    rewrite multiset.cons_swap,
     }
 end
 
