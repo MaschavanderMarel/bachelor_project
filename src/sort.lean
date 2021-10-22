@@ -30,7 +30,7 @@ end
 
 #check multiset.cons 0 xs
 
-lemma mset_isort: ↑(list.insertion_sort r xs) =  ({}:multiset ℕ ) + xs :=
+lemma mset_isort: ((list.insertion_sort r xs): multiset ℕ =   ↑xs :=
 begin
   induction' xs,
   {refl},
