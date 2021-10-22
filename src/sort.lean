@@ -15,27 +15,23 @@ variables α : Type
 variables x: ℕ 
 variables xs: list ℕ 
 
-lemma mset_insort : ↑(ordered_insert r x xs) = multiset.cons x xs :=
+lemma mset_insort : ((ordered_insert r x xs):multiset ℕ) =  {x} + ↑xs :=
 begin
-  induction' xs, 
+    induction' xs, 
   { refl },
   { rewrite list.ordered_insert,
     split_ifs, 
     refl, 
-    simp [← multiset.cons_coe], 
-    simp only [ih],
-    rewrite multiset.cons_swap,
+    simp [← multiset.cons_coe, ih], 
     }
 end
 
-#check multiset.cons 0 xs
-
-lemma mset_isort: ((list.insertion_sort r xs): multiset ℕ =   ↑xs :=
+lemma mset_isort: ((list.insertion_sort r xs): multiset ℕ) = ↑xs :=
 begin
   induction' xs,
   {refl},
   { simp [mset_insort],
-    simp at ih,
     simp [ih],
+    refl
     }
 end
