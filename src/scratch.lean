@@ -10,7 +10,12 @@ set_option trace.simplify.rewrite true
 def l: list ℕ  :=
 [2,4,5,5,3] 
 
-#eval l.length
+#eval l
+
+def s: set ℕ :=
+{2,3,1}
+
+#eval s
 
 @[derive decidable_rel]
 def r (m n : ℕ ):  Prop := 
@@ -21,7 +26,7 @@ m ≤  n
 #eval ordered_insert r 3 (insertion_sort r l)
 #check list.ordered_insert r 3 l
 
-#eval multiset.cons 5 ({3,4})
+#eval multiset.cons 5 {3,4}
 #eval append [4] [2,3]
 
 #check [3,4,5]
