@@ -15,11 +15,9 @@ set_option trace.simplify.rewrite true
 -- def r (m n : ℕ):  Prop := 
 -- m ≤  n
 
-universe variable uu
-variables {α : Type uu} (r : α → α → Prop) [decidable_rel r]
+variables {α : Type*} (r : α → α → Prop) [decidable_rel r]
 variables x: α 
 variables xs: list α  
-
 
 lemma mset_insort : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
 begin
@@ -28,7 +26,7 @@ begin
   { simp,
     split_ifs, 
     refl, 
-    simp [← multiset.cons_coe, *], 
+    simp [← multiset.cons_coe, ih], 
     }
 end
 
@@ -42,18 +40,16 @@ begin
     }
 end 
 
-def list_to_multiset_wo_dup (l: list α): multiset α :=
-multiset.erase_dup l   
+def list.to_set : list α → set α
+| []     := ∅
+| (h::t) := {h} ∪ list.to_set t
 
-def multiset_to_finset (m: multiset ℕ ) (h: m.nodup) : finset ℕ :=
-{val := m , nodup:= h}
+instance list_to_set_coe (α : Type*) :
+  has_coe (list α) (set α) :=
+⟨list.to_set⟩
 
-#check list_to_multiset_wo_dup [1,2] 
-#check multiset_to_finset {1,2}
-
-lemma set_insort:  multiset.erase_dup (ordered_insert r x xs)  = {x} ∪ multiset.erase_dup xs  :=
+lemma set_insort:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
 begin
-  rewrite mset_insort,
   sorry
 end
 
