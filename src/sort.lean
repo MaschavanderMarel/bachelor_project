@@ -11,13 +11,13 @@ open finset
 
 set_option trace.simplify.rewrite true
 
--- @[derive decidable_rel]
--- def r (m n : ℕ):  Prop := 
--- m ≤  n
-
 variables {α : Type*} (r : α → α → Prop) [decidable_rel r]
 variables x: α 
 variables xs: list α  
+
+-- @[derive decidable_rel]
+-- def r (m n : ℕ  ):  Prop := 
+-- m ≤  n
 
 lemma mset_insort : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
 begin
@@ -48,8 +48,11 @@ instance list_to_set_coe (α : Type*) :
   has_coe (list α) (set α) :=
 ⟨list.to_set⟩
 
+#reduce list.to_set [1,2,3]
+
 lemma set_insort:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
 begin
+  rewrite mset_insort,
   sorry
 end
 
