@@ -60,15 +60,8 @@ begin
   simp [set.insert_def]
 end 
 
-#print set_mset_mset
-#print set.insert_def
-#print set.insert
-#reduce multiset.to_set ({2,3,2}: multiset ℕ )
-#reduce list.to_set [2,3,2]
-
-lemma set_insort:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
+lemma set_insort2:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
 begin
- -- rewrite mset_insort, --how to use mset_insort like in Functional algorithms verified?
   induction' xs,
   {refl},
   simp,
@@ -79,15 +72,14 @@ begin
   simp [insert_comm]
 end
 
-lemma set_insort2:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
+lemma set_insort:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
 begin
- -- rewrite mset_insort, --how to use mset_insort like in Functional algorithms verified?
   simp,
-  sorry
+  simp [set.insert_def],
+  simp [← set_mset_mset],
+  simp [mset_insort],
+  simp [multiset.to_set]
 end
-
-example: [2,1].sorted (λ m n: ℕ , m ≤ n) = false :=
-by simp
 
 lemma sorted_insort: (ordered_insert r a xs).sorted r = xs.sorted r:=
 begin
