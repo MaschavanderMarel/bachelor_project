@@ -9,8 +9,9 @@ open set
 
 set_option trace.simplify.rewrite true
 
-variables {α : Type*} (r : α → α → Prop) [decidable_rel r]
-variables a x: α 
+--universe variable uu
+variables {α : Type*} (r : α → α → Prop) [decidable_rel r] 
+variables x: α 
 variables xs: list α  
 
 lemma mset_insort : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
@@ -22,11 +23,6 @@ begin
     refl, 
     simp [← multiset.cons_coe, ih], 
     }
-end
-
-example: (ordered_insert (λ m n: ℕ , m ≤ n) 3 [2,4]:multiset ℕ)  = {3} + ↑[2,4] :=
-begin
-  simp only [mset_insort],
 end
 
 lemma mset_isort: ((list.insertion_sort r xs): multiset α ) = ↑xs :=
@@ -66,13 +62,13 @@ begin
   {refl},
   simp,
   split_ifs,
-  refl,
-  simp [list.to_set],
-  simp [ih],
-  simp [insert_comm]
+    {refl},
+    {simp [list.to_set],
+     simp [ih],
+     simp [insert_comm]}
 end
 
-lemma set_insort:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
+lemma set_insort:  (ordered_insert r x xs).to_set  = {x} ∪ xs.to_set  :=
 begin
   simp,
   simp [set.insert_def],
@@ -81,11 +77,65 @@ begin
   simp [multiset.to_set]
 end
 
-lemma sorted_insort: (ordered_insert r a xs).sorted r = xs.sorted r:=
+variables  [is_total α r] [is_trans α r]
+
+def is_sorted : list α → Prop 
+| [] := true
+| (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ is_sorted t
+
+lemma sorted_insort (a: α ): is_sorted r (ordered_insert r a xs) = is_sorted r xs :=
 begin
-  induction' xs,
-  {simp},
-  simp,
-  sorry
+induction' xs,
+{ simp [is_sorted],
+  intros,
+  exact false.elim H},
+{ simp only [ordered_insert],
+  split_ifs,
+  { simp [is_sorted, list.to_set],
+    intros h1 h2,
+    apply and.intro h,
+    intros b h3, 
+    have h4: b ∈ xs.to_set → r hd b, from h1 b,
+    have h5: r hd b, from h4 h3,
+    --exact trans h h5, --why does trans fail?,
+    sorry
+    },
+  { simp [is_sorted, list.to_set, ih, set_insort],
+    intros h1 h2,
+    have h3: r hd a ∨ r a hd, from sorry, -- why does total_of r fail?
+    exact or.resolve_right h3 h}}
 end
 
+@[derive decidable_rel]
+def r': ℕ  → ℕ  → Prop :=
+(λ m n : ℕ, m ≤ n)
+
+#check @ordered_insert
+#print ordered_insert
+#reduce [1,3].ordered_insert r' 2
+
+variable [is_linear_order ℕ r']
+
+#check @list.sorted
+#reduce ([1,2,3]: list ℕ).sorted r'
+#print is_sorted
+#reduce is_sorted r' [1,2,3]
+#reduce [1,2,3].to_set
+
+example: is_sorted r' [1,2,3] = is_sorted r' [1,2] :=
+begin
+simp [is_sorted, list.to_set, r'],
+
+end
+
+example: [1,2,3].sorted r' ↔ r' 1 2 ∧ r' 1 3 ∧ r' 2 3 :=
+begin
+   simp [and_assoc],
+end
+
+example: [1,2,3].sorted r' →  [1,2].sorted r' :=
+begin
+  simp,
+  intros,
+  assumption
+end
