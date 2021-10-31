@@ -56,18 +56,6 @@ begin
   simp [set.insert_def]
 end 
 
-lemma set_insort2:  list.to_set (ordered_insert r x xs)  = {x} ∪ list.to_set xs  :=
-begin
-  induction' xs,
-  {refl},
-  simp,
-  split_ifs,
-    {refl},
-    {simp [list.to_set],
-     simp [ih],
-     simp [insert_comm]}
-end
-
 lemma set_insort:  (ordered_insert r x xs).to_set  = {x} ∪ xs.to_set  :=
 begin
   simp,
@@ -83,7 +71,7 @@ def is_sorted : list α → Prop
 | [] := true
 | (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ is_sorted t
 
-lemma sorted_insort (a: α ): is_sorted r (ordered_insert r a xs) = is_sorted r xs :=
+lemma sorted_insort: is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
 begin
 induction' xs,
 { simp [is_sorted],
@@ -102,40 +90,14 @@ induction' xs,
     },
   { simp [is_sorted, list.to_set, ih, set_insort],
     intros h1 h2,
-    have h3: r hd a ∨ r a hd, from sorry, -- why does total_of r fail?
+    have h3: r hd x ∨ r x hd, from sorry, -- why does total_of r fail?
     exact or.resolve_right h3 h}}
 end
 
-@[derive decidable_rel]
-def r': ℕ  → ℕ  → Prop :=
-(λ m n : ℕ, m ≤ n)
-
-#check @ordered_insert
-#print ordered_insert
-#reduce [1,3].ordered_insert r' 2
-
-variable [is_linear_order ℕ r']
-
-#check @list.sorted
-#reduce ([1,2,3]: list ℕ).sorted r'
-#print is_sorted
-#reduce is_sorted r' [1,2,3]
-#reduce [1,2,3].to_set
-
-example: is_sorted r' [1,2,3] = is_sorted r' [1,2] :=
+lemma sorted_isort: is_sorted r (insertion_sort r xs) :=
 begin
-simp [is_sorted, list.to_set, r'],
-
+  induction' xs,
+  { simp},
+  { simp [sorted_insort, ih]}
 end
 
-example: [1,2,3].sorted r' ↔ r' 1 2 ∧ r' 1 3 ∧ r' 2 3 :=
-begin
-   simp [and_assoc],
-end
-
-example: [1,2,3].sorted r' →  [1,2].sorted r' :=
-begin
-  simp,
-  intros,
-  assumption
-end
