@@ -85,13 +85,11 @@ induction' xs,
     intros b h3, 
     have h4: b ∈ xs.to_set → r hd b, from h1 b,
     have h5: r hd b, from h4 h3,
-    --exact trans h h5 , --why does trans failed to synthesize type class instance ? It works in example below
-    sorry
+    exact @trans α r _inst_3 x hd b h h5 , 
     },
   { simp [is_sorted, list.to_set, ih, set_insort],
     intros h1 h2,
-    --have h3: r hd x ∨ r x hd, from total_of r hd x,  -- why does total_of r failed to synthesize type class instance? It works in example below
-    have h3: r hd x ∨ r x hd, from sorry,
+    have h3: r hd x ∨ r x hd, from @total_of α r _inst_2 hd x, 
     exact or.resolve_right h3 h}}
 end
 
@@ -100,17 +98,4 @@ begin
   induction' xs,
   { simp},
   { simp [sorted_insort, ih]}
-end
-
-example (a b c: α ): r a b ∧ r b c → r a c :=
-begin
-intro h1,
-have h2: r a b, from h1.left,
-have h3: r b c, from h1.right,
-exact trans h2 h3
-end
-
-example (a b : α ) : r a b ∨ r b a :=
-begin
-exact total_of r a b
 end
