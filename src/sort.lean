@@ -9,11 +9,11 @@ open set
 
 set_option trace.simplify.rewrite true
 
-variables {α : Type*} (r : α → α → Prop) [decidable_rel r]  --TODO include block variables in lemma's
+variables {α : Type*} (r : α → α → Prop) --[decidable_rel r]  --TODO include block variables in lemma's
 variables x: α 
 variables xs: list α  
 
-lemma mset_insort : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
+lemma mset_insort [decidable_rel r] : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
 begin
   induction' xs, 
   { refl },
@@ -23,7 +23,7 @@ begin
     simp [← multiset.cons_coe, ih] }
 end
 
-lemma mset_isort: ((list.insertion_sort r xs): multiset α ) = ↑xs :=
+lemma mset_isort [decidable_rel r]: ((list.insertion_sort r xs): multiset α ) = ↑xs :=
 begin
   induction' xs,
   { refl },
@@ -49,7 +49,7 @@ begin
     simp [set.insert_def] }
 end 
 
-lemma set_insort:  (ordered_insert r x xs).to_set  = {x} ∪ xs.to_set  :=
+lemma set_insort [decidable_rel r]:  (ordered_insert r x xs).to_set  = {x} ∪ xs.to_set  :=
 begin
   simp,
   simp [set.insert_def],
@@ -64,7 +64,7 @@ def is_sorted : list α → Prop
 | [] := true
 | (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ is_sorted t
 
-lemma sorted_insort : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
+lemma sorted_insort [decidable_rel r]  : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
 begin
   induction' xs,
   { simp [is_sorted],
@@ -79,15 +79,15 @@ begin
       have h4: b ∈ xs.to_set → r hd b, from h1 b,
       have h5: r hd b, from h4 h3,
       --exact trans h h5,
-      exact @trans α r _inst_3 x hd b h h5 , 
+      exact @trans α r _inst_2 x hd b h h5 , 
       },
     { simp [is_sorted, list.to_set, ih, set_insort],
       intros h1 h2,
-      have h3: r hd x ∨ r x hd, from @total_of α r _inst_2 hd x, 
+      have h3: r hd x ∨ r x hd, from @total_of α r _inst_1 hd x, 
       exact or.resolve_right h3 h } }
 end
 
-lemma sorted_isort: is_sorted r (insertion_sort r xs) :=
+lemma sorted_isort [decidable_rel r]: is_sorted r (insertion_sort r xs) :=
 begin
   induction' xs,
   { simp},
