@@ -35,11 +35,11 @@ begin
     }
 end 
 
-def list.to_set : list α → set α --does this def need to be proofed?
+def list.to_set : list α → set α --does this def need to be proofed? source: chapter 10.6 Theorem Proving in Lean
 | []     := ∅
 | (h::t) := {h} ∪ list.to_set t
 
-instance list_to_set_coe (α : Type*) : --what is this used for?
+instance list_to_set_coe (α : Type*) :
   has_coe (list α) (set α) :=
 ⟨list.to_set⟩
 
@@ -65,7 +65,7 @@ begin
   simp [multiset.to_set]
 end
 
-variables  [is_total α r] [is_trans α r]
+variables [is_total α r] [is_trans α r]
 
 def is_sorted : list α → Prop 
 | [] := true
@@ -85,12 +85,13 @@ induction' xs,
     intros b h3, 
     have h4: b ∈ xs.to_set → r hd b, from h1 b,
     have h5: r hd b, from h4 h3,
-    --exact trans h h5, --why does trans fail?,
+    --exact trans h h5 , --why does trans failed to synthesize type class instance ? It works in example below
     sorry
     },
   { simp [is_sorted, list.to_set, ih, set_insort],
     intros h1 h2,
-    have h3: r hd x ∨ r x hd, from sorry, -- why does total_of r fail?
+    --have h3: r hd x ∨ r x hd, from total_of r hd x,  -- why does total_of r failed to synthesize type class instance? It works in example below
+    have h3: r hd x ∨ r x hd, from sorry,
     exact or.resolve_right h3 h}}
 end
 
@@ -101,3 +102,15 @@ begin
   { simp [sorted_insort, ih]}
 end
 
+example (a b c: α ): r a b ∧ r b c → r a c :=
+begin
+intro h1,
+have h2: r a b, from h1.left,
+have h3: r b c, from h1.right,
+exact trans h2 h3
+end
+
+example (a b : α ) : r a b ∨ r b a :=
+begin
+exact total_of r a b
+end
