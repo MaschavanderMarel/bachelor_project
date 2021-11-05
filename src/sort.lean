@@ -9,6 +9,11 @@ open set
 
 set_option trace.simplify.rewrite true
 
+/- Insertion sort
+ -/
+
+section Insertion_sort
+
 variable {α : Type*}
 variable r:α → α → Prop
 variable x: α 
@@ -96,9 +101,24 @@ exact @trans α r _ a b c h2 h3,
 -- exact trans h2 h3
 end
 
-example (a b : α ) [is_linear_order α r] : r a b ∨ r b a :=
+example (a b : α ) {s: α → α → Prop} [is_linear_order α s] : s a b ∨ s b a :=
 begin
-exact total_of r a b
+exact total_of s a b
 end
 
+end Insertion_sort
 
+/- Quicksort
+ -/
+
+section Quicksort
+
+def quicksort : list ℕ  → list ℕ    
+| [] := []
+| (x::xs) :=  have (list.filter (λ (y : ℕ), y < x) xs).sizeof < 1 + x + xs.sizeof, from sorry,
+              have (list.filter (has_le.le x) xs).sizeof < 1 + x + xs.sizeof, from sorry,
+              quicksort (xs.filter (λ y: ℕ  , y < x)) ++ [x] ++ quicksort (xs.filter (λ y: ℕ , y ≥ x))   
+
+end Quicksort
+
+#eval quicksort [3,2,1]
