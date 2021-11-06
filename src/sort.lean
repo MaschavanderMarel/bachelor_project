@@ -2,6 +2,7 @@ import data.list.sort
 import data.multiset
 import data.set
 import tactic.induction
+import tactic.ring
 
 open list
 open multiset
@@ -13,6 +14,8 @@ set_option trace.simplify.rewrite true
  -/
 
 section Insertion_sort
+
+-- Functional Correctness
 
 variable {α : Type*}
 variable r:α → α → Prop
@@ -63,7 +66,7 @@ def is_sorted [is_total α r] [is_trans α r] : list α → Prop
 | [] := true
 | (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ is_sorted t
 
-lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
+lemma sorted_insort [decidable_rel r] [is_total α r] [ t: is_trans α r]  : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
 begin
   induction' xs,
   { simp [is_sorted],
@@ -78,7 +81,7 @@ begin
       have h4: y ∈ xs.to_set → r hd y, from h1 y,
       have h5: r hd y, from h4 h3,
       clear h4 h1 h2 _inst_1 _inst_2 ih h3 xs,
-      exact @trans α r _inst_3 x hd y h h5 }, --why is _inst_3 not found by Lean without naming it explicitly even after clearing all other hypotheses?
+      exact @trans _ _ t _ _ _ h h5 }, --why is t not found by Lean without mentioning it explicitly, but it is in example below?
     { simp [is_sorted, list.to_set, ih, set_insort],
       intros h1 h2,
       have h3: r hd x ∨ r x hd, from @total_of α r _inst_2 hd x, 
@@ -103,7 +106,62 @@ end
 
 example (a b : α ) {s: α → α → Prop} [is_linear_order α s] : s a b ∨ s b a :=
 begin
-exact total_of s a b
+  exact total_of s a b
+end
+
+/- Time Complexity
+   We count the number of function calls
+ -/
+
+def T_insort [decidable_rel r] : α → list α → nat 
+| x [] := 1
+| x (y::ys) := if  r x y  then 0 else T_insort x ys + 1 
+
+def T_isort [decidable_rel r] : list α → nat 
+| [] := 1
+| (x::xs) := T_isort xs + T_insort r x (insertion_sort r xs) + 1
+
+lemma T_insort_length [decidable_rel r]: T_insort r x xs <= xs.length + 1 :=
+begin
+  induction' xs,
+  { simp [T_insort] },
+  { simp [T_insort],
+    split_ifs,
+    { simp},
+    { simp [ih] } }
+end
+
+lemma length_insort [decidable_rel r] : (ordered_insert r x xs).length = xs.length + 1 :=
+begin
+  induction' xs,
+  { simp [ordered_insert] },
+  { simp,
+    split_ifs,
+    { simp},
+    { simp [ih] } }
+end
+
+lemma length_isort [decidable_rel r] : (insertion_sort r xs).length = xs.length :=
+begin
+  induction' xs,
+  { simp},
+  { simp [length_insort, ih] }
+end
+
+lemma T_isort_length [d: decidable_rel r]: T_isort r xs <= (xs.length + 1) ^ 2 :=
+begin
+  induction' xs,
+  { simp [T_isort]},
+  { simp [T_isort, T_insort_length, length_isort],
+    show @T_isort _ _ _ xs + @T_insort _ _ _ hd (@insertion_sort _ _ _ xs) + 1 ≤ (xs.length + 1 + 1) ^ 2, by calc
+    @T_isort _ _ d xs + @T_insort _ _ d hd (@insertion_sort _ _ d xs) + 1 ≤ (xs.length + 1) ^ 2 + @T_insort _ _ d hd (@insertion_sort _ _ d xs) + 1 : by simp [ih]
+    ... ≤ (xs.length + 1) ^ 2 + ((@insertion_sort _ _ d xs).length + 1) + 1 : by simp [T_insort_length]
+    ... = (xs.length + 1) ^ 2 + (xs.length + 1) + 1 : by simp [length_isort]
+    ... = xs.length ^2 + 2 * xs.length + xs.length + 3 : by ring
+    ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 3 : by simp 
+    ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 4 : by simp 
+    ... = (xs.length + 1 + 1) ^ 2 : by ring,
+    }
 end
 
 end Insertion_sort
