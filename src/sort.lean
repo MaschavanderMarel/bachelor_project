@@ -209,3 +209,9 @@ begin
   simp [← list.cons_append] ,
   simp only [list.perm_cons_append_cons hd_1 h2],
 end  
+
+lemma set_merge [decidable_rel r]: (merge r xs ys).to_set = xs.to_set ∪ ys.to_set :=
+begin
+  simp [← set_mset_mset, mset_merge, multiset.to_set],
+  refl
+end
