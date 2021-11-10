@@ -32,11 +32,11 @@ begin
       simp [← multiset.cons_coe, ih] }
 end
 
-lemma mset_isort [decidable_rel r]: ((list.insertion_sort r xs): multiset α ) = ↑xs :=
+lemma mset_isort [decidable_rel r]: (↑ (list.insertion_sort r xs): multiset α ) = ↑xs :=
 begin
   induction' xs,
   { refl },
-  { simp [mset_insort, *],
+  { simp [mset_insort, ih],
     refl }
 end 
 
@@ -180,3 +180,32 @@ def quicksort : list ℕ  → list ℕ
 end Quicksort
 
 #eval quicksort [3,2,1]
+
+/- Top-Down Merge Sort-/
+
+#eval merge (λ m n: ℕ, m < n) [1,3] [2,4]
+#eval merge_sort (λ m n: ℕ , m < n) [2,1,4,3]
+
+-- Functional Correctness
+
+variable {α : Type*}
+variable r: α → α → Prop
+variables xs ys: list α 
+
+lemma mset_merge [decidable_rel r]: (↑ (merge r xs ys): multiset α)  = ↑ xs + ↑ ys :=
+begin
+  simp,
+  induction' xs,
+  { induction' ys,
+    { simp [merge]},
+    simp [merge] },
+  induction' ys,
+  { simp [merge] },
+  simp [merge],
+  split_ifs,
+  { simp [ih] },
+  have h1: (∀ (r : α → α → Prop) (ys : list α) [_inst_1 : decidable_rel r], @merge _ r _inst_1 xs ys ~ xs ++ ys) → @merge _ r _inst_1 (hd :: xs) ys ~ hd :: xs ++ ys, from  @ih_ys r _inst_1 hd xs,  
+  have h2: @merge _ r _inst_1 (hd :: xs) ys ~ (hd :: xs) ++ ys, from h1 ih, 
+  simp [← list.cons_append] ,
+  simp only [list.perm_cons_append_cons hd_1 h2],
+end  
