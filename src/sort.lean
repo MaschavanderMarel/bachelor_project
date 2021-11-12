@@ -66,9 +66,9 @@ def is_sorted [is_total α r] [is_trans α r] : list α → Prop
 | [] := true
 | (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ is_sorted t
 
-lemma sorted_insort [decidable_rel r] [is_total α r] [ t: is_trans α r]  : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
+lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
 begin
-  induction' xs,
+  induction' xs fixing *, -- by using fixing the trans and total_of functions will work without mentioning the instances explicitly
   { simp [is_sorted],
     intros,
     exact false.elim H },
@@ -80,11 +80,10 @@ begin
       intros y h3, 
       have h4: y ∈ xs.to_set → r hd y, from h1 y,
       have h5: r hd y, from h4 h3,
-      clear h4 h1 h2 _inst_1 _inst_2 ih h3 xs,
-      exact @trans _ _ t _ _ _ h h5 }, --why is t not found by Lean without mentioning it explicitly, but it is in example below?
+      exact trans h h5 }, 
     { simp [is_sorted, list.to_set, ih, set_insort],
       intros h1 h2,
-      have h3: r hd x ∨ r x hd, from @total_of α r _inst_2 hd x, 
+      have h3: r hd x ∨ r x hd, from total_of r hd x, 
       exact or.resolve_right h3 h } }
 end
 
@@ -93,20 +92,6 @@ begin
   induction' xs,
   { simp},
   { simp [sorted_insort, ih] }
-end
-
-example (a b c: α ) [decidable_rel r] [is_trans α r] [is_total α r] [is_linear_order α r]: r a b ∧ r b c → r a c :=
-begin
-intro h1,
-have h2: r a b, from h1.left,
-have h3: r b c, from h1.right,
-exact @trans α r _ a b c h2 h3,
--- exact trans h2 h3
-end
-
-example (a b : α ) {s: α → α → Prop} [is_linear_order α s] : s a b ∨ s b a :=
-begin
-  exact total_of s a b
 end
 
 /- Time Complexity
@@ -148,14 +133,14 @@ begin
   { simp [length_insort, ih] }
 end
 
-lemma T_isort_length [d: decidable_rel r]: T_isort r xs <= (xs.length + 1) ^ 2 :=
+lemma T_isort_length [decidable_rel r]: T_isort r xs <= (xs.length + 1) ^ 2 :=
 begin
-  induction' xs,
+  induction' xs fixing *,
   { simp [T_isort]},
   { simp [T_isort, T_insort_length, length_isort],
-    show @T_isort _ _ _ xs + @T_insort _ _ _ hd (@insertion_sort _ _ _ xs) + 1 ≤ (xs.length + 1 + 1) ^ 2, by calc
-    @T_isort _ _ d xs + @T_insort _ _ d hd (@insertion_sort _ _ d xs) + 1 ≤ (xs.length + 1) ^ 2 + @T_insort _ _ d hd (@insertion_sort _ _ d xs) + 1 : by simp [ih]
-    ... ≤ (xs.length + 1) ^ 2 + ((@insertion_sort _ _ d xs).length + 1) + 1 : by simp [T_insort_length]
+    show T_isort r xs + T_insort r hd (insertion_sort r xs) + 1 ≤ (xs.length + 1 + 1) ^ 2, by calc
+    T_isort r xs + T_insort r hd (insertion_sort r xs) + 1 ≤ (xs.length + 1) ^ 2 + T_insort r hd (insertion_sort r xs) + 1 : by simp [ih]
+    ... ≤ (xs.length + 1) ^ 2 + ((insertion_sort r xs).length + 1) + 1 : by simp [T_insort_length]
     ... = (xs.length + 1) ^ 2 + (xs.length + 1) + 1 : by simp [length_isort]
     ... = xs.length ^2 + 2 * xs.length + xs.length + 3 : by ring
     ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 3 : by simp 
@@ -199,7 +184,7 @@ begin
   { induction' ys,
     { simp [merge]},
     simp [merge] },
-  induction' ys,
+  induction' ys ,
   { simp [merge] },
   simp [merge],
   split_ifs,
@@ -215,3 +200,15 @@ begin
   simp [← set_mset_mset, mset_merge, multiset.to_set],
   refl
 end
+
+lemma mset_msort [decidable_rel r]: (↑ (merge_sort r xs):multiset α) = ↑ xs :=
+begin
+  simp,
+  induction' xs,
+  { simp [merge_sort] },
+  cases @merge_sort _ r _inst_1 xs,
+  sorry,
+  sorry,
+end
+
+#check @merge_sort
