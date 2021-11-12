@@ -165,6 +165,8 @@ def quicksort : list ℕ  → list ℕ
 end Quicksort
 
 #eval quicksort [3,2,1]
+-- quicksort is defined in library
+#eval list.qsort (λ m n: ℕ , m < n) [2,1]
 
 /- Top-Down Merge Sort-/
 
@@ -206,9 +208,13 @@ begin
   simp,
   induction' xs,
   { simp [merge_sort] },
-  cases @merge_sort _ r _inst_1 xs,
-  sorry,
-  sorry,
+  simp [merge_sort]
 end
 
+example (xs: list ℕ ): 1::xs = (list.nil:list ℕ)::1::xs :=
+sorry
+
 #check @merge_sort
+
+#eval merge_sort (λ m n : ℕ, m ≤ n) [23, 12]
+#eval merge_sort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
