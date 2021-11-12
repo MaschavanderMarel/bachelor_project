@@ -222,35 +222,77 @@ end
 lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: 
   sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
-  induction' xs,
-  { induction' ys,
-      simp [merge],
-    { simp [merge, sorted'] }},
-  { induction' ys,
-    { simp [merge, sorted'] },
-    have h: (@sorted' _ r t tr (@merge _ r d (hd :: xs) ys) ↔ @sorted' _ r t tr (hd :: xs) ∧ @sorted' _ r t tr ys), from @ih_ys r d t tr hd xs ih,
-    have h1: (∀ (r : α → α → Prop) (ys : list α) [d : decidable_rel r] [t : is_total α r] [tr : is_trans α r], @sorted' _ r t tr (@merge _ r d xs ys) ↔ @sorted' _ r t tr xs ∧ @sorted' _ r t tr ys) → (@sorted' _ r t tr (@merge _ r d (hd :: xs) ys) ↔ @sorted' _ r t tr (hd :: xs) ∧ @sorted' _ r t tr ys), from @ih_ys r d t tr hd xs,
-
-    have h3: @sorted' _ r t tr (@merge _ r d xs (hd_1::ys)) ↔ @sorted' _ r t tr xs ∧ @sorted' _ r t tr(hd_1::ys), from @ih r (hd_1::ys) d t tr,
-    -- have h4: _, from @h1 ih ,
-    simp [sorted', set_merge],
-    sorry
-     }
-end
-
-lemma sorted_merge2 [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: 
-  sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
-begin
    induction' xs,
   { induction' ys,
       simp [merge],
     { simp [merge, sorted'] }},
-  { induction' ys,
+  { induction' ys fixing *, 
     { simp [merge, sorted'] },
-    { sorry } } 
+    { simp [merge],
+      split_ifs,
+      { simp [sorted', set_merge, ih, list.to_set],
+        apply iff.intro,
+        { intros h,
+          apply and.intro,
+          { apply and.intro,
+            { intros,
+              have h2: ∀ (a : α), a ∈ xs.to_set ∨ a ∈ ys.to_set → r hd a, from h.left.right,
+              exact (h2 y) (or.inl H)},
+            have h1: sorted' r xs ∧ (∀ (y : α), y ∈ ys.to_set → r hd_1 y) ∧ sorted' r ys, from h.right,
+            exact h1.left},
+          apply and.intro,
+          { intros,
+            have h3: (∀ (y : α), y ∈ ys.to_set → r hd_1 y), from h.right.right.left,
+            exact h3 y H},
+          exact h.right.right.right},
+        intros h1,
+        apply and.intro,
+        { apply and.intro,
+          { exact h},
+          intros a h3,
+          have h4: a ∈ xs.to_set → r hd a, from h1.left.left a,
+          apply or.elim h3,
+          { exact h4},
+          intro h6,
+          have h7: (∀ (y : α), y ∈ ys.to_set → r hd_1 y), from h1.right.left,
+          have h8: r hd_1 a, from h7 a h6,
+          exact trans h h8},
+        apply and.intro,
+        { exact h1.left.right},
+        exact h1.right},
+      { simp [sorted', set_merge, ih_ys, list.to_set, sorted'],
+        apply iff.intro,
+        { simp,
+          intros h1 h2 h3 h4,
+          apply and.intro,
+          { exact and.intro h2 h3},
+          apply and.intro,
+          { intros,
+            exact h1 y (or.inr H)},
+          exact h4},
+        simp,
+        intros h1 h2 h3 h4,
+        apply and.intro,
+        { intros,
+          apply or.elim H,
+          { intro h5,
+            apply or.elim h5,
+            { intro h6,
+              have h7: r hd_1 y ∨ r y hd_1, from total_of r hd_1 y,
+              have h8: ¬ r y hd_1, from eq.subst h6.symm h,
+              apply or.resolve_right h7 h8, },
+            intro h6,
+            have h7: r hd y, from h1 y h6,
+            have h8: r hd_1 hd ∨ r hd hd_1, from total_of r hd_1 hd,
+            have h9: r hd_1 hd, from or.resolve_right h8 h,
+            exact trans h9 h7 },
+          exact h3 y},
+        exact and.intro (and.intro h1 h2) h4 } } } 
+
 end
 
-#check list.cons  [2,3]
+
+#check @total_of
 
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
 #eval merge_sort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
