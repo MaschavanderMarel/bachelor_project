@@ -11,7 +11,7 @@ open set
 set_option trace.simplify.rewrite true
 
 variable {α : Type*}
-variable r:α → α → Prop
+variable r: α → α → Prop
 variable x: α 
 variable xs: list α  
 
@@ -204,10 +204,8 @@ begin
   simp [merge],
   split_ifs,
   { simp [ih] },
-  have h1: (∀ (r : α → α → Prop) (ys : list α) [decidable_rel r], @merge _ r _inst_1 xs ys ~ xs ++ ys) → @merge _ r d (hd :: xs) ys ~ hd :: xs ++ ys, from  @ih_ys r d hd xs,  
-  have h2: @merge _ r d (hd :: xs) ys ~ (hd :: xs) ++ ys, from h1 ih, 
   simp [← list.cons_append] ,
-  simp only [list.perm_cons_append_cons hd_1 h2],
+  simp only [list.perm_cons_append_cons hd_1 (@ih_ys _ _ _ _ ih)],
 end  
 
 lemma set_merge [decidable_rel r]: (merge r xs ys).to_set = xs.to_set ∪ ys.to_set :=
@@ -221,7 +219,8 @@ begin
   simp [perm_merge_sort],
 end
 
-lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
+lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: 
+  sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
   induction' xs,
   { induction' ys,
@@ -230,15 +229,25 @@ begin
   { induction' ys,
     { simp [merge, sorted'] },
     have h: (@sorted' _ r t tr (@merge _ r d (hd :: xs) ys) ↔ @sorted' _ r t tr (hd :: xs) ∧ @sorted' _ r t tr ys), from @ih_ys r d t tr hd xs ih,
+    have h1: (∀ (r : α → α → Prop) (ys : list α) [d : decidable_rel r] [t : is_total α r] [tr : is_trans α r], @sorted' _ r t tr (@merge _ r d xs ys) ↔ @sorted' _ r t tr xs ∧ @sorted' _ r t tr ys) → (@sorted' _ r t tr (@merge _ r d (hd :: xs) ys) ↔ @sorted' _ r t tr (hd :: xs) ∧ @sorted' _ r t tr ys), from @ih_ys r d t tr hd xs,
+
+    have h3: @sorted' _ r t tr (@merge _ r d xs (hd_1::ys)) ↔ @sorted' _ r t tr xs ∧ @sorted' _ r t tr(hd_1::ys), from @ih r (hd_1::ys) d t tr,
+    -- have h4: _, from @h1 ih ,
+    simp [sorted', set_merge],
     sorry
      }
 end
 
-
-
-example (xs: list ℕ ): xs = xs.head::xs.tail :=
+lemma sorted_merge2 [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: 
+  sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
-  sorry,
+   induction' xs,
+  { induction' ys,
+      simp [merge],
+    { simp [merge, sorted'] }},
+  { induction' ys,
+    { simp [merge, sorted'] },
+    { sorry } } 
 end
 
 #check list.cons  [2,3]
