@@ -10,12 +10,17 @@ open set
 
 set_option trace.simplify.rewrite true
 
-/- Insertion sort
+/- 
+# Insertion sort
  -/
 
 section Insertion_sort
 
--- Functional Correctness
+/- The two functions insort and isort from Functional Algorithms Verified are already defined in Lean as ordered_insert and insertion_sort respectively.
+ -/
+
+/- ## Functional Correctness
+ -/
 
 variable {α : Type*}
 variable r:α → α → Prop
@@ -94,7 +99,7 @@ begin
   { simp [sorted_insort, ih] }
 end
 
-/- Time Complexity
+/- ## Time Complexity
    We count the number of function calls
  -/
 
@@ -151,7 +156,8 @@ end
 
 end Insertion_sort
 
-/- Quicksort
+/- 
+# Quicksort
  -/
 
 section Quicksort
@@ -168,16 +174,25 @@ end Quicksort
 -- quicksort is defined in library
 #eval list.qsort (λ m n: ℕ , m < n) [2,1]
 
-/- Top-Down Merge Sort-/
+/- 
+# Top-Down Merge Sort
+-/
 
 #eval merge (λ m n: ℕ, m < n) [1,3] [2,4]
 #eval merge_sort (λ m n: ℕ , m < n) [2,1,4,3]
 
--- Functional Correctness
+/- The function merge in Functional Algoriths Verified! is already defined in Lean as merge. The function msort is defined but in a slightly different way. Therefore, it is defined below in the same way, so the proof structure of the book can be followed. -/
 
 variable {α : Type*}
 variable r: α → α → Prop
 variables xs ys: list α 
+
+def msort: list α → list α :=
+sorry
+
+/- 
+## Functional Correctness
+ -/
 
 lemma mset_merge [decidable_rel r]: (↑ (merge r xs ys): multiset α)  = ↑ xs + ↑ ys :=
 begin
@@ -207,14 +222,16 @@ lemma mset_msort [decidable_rel r]: (↑ (merge_sort r xs):multiset α) = ↑ xs
 begin
   simp,
   induction' xs,
-  { simp [merge_sort] },
-  simp [merge_sort]
+  simp [merge_sort],
+  sorry
 end
 
-example (xs: list ℕ ): 1::xs = (list.nil:list ℕ)::1::xs :=
-sorry
+example (xs: list ℕ ): xs = xs.head::xs.tail :=
+begin
+  sorry
+end
 
-#check @merge_sort
+#check list.cons  [2,3]
 
-#eval merge_sort (λ m n : ℕ, m ≤ n) [23, 12]
+#eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
 #eval merge_sort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
