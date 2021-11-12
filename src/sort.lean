@@ -10,6 +10,24 @@ open set
 
 set_option trace.simplify.rewrite true
 
+variable {α : Type*}
+variable r:α → α → Prop
+variable x: α 
+variable xs: list α  
+
+def list.to_set : list α → set α --Source: chapter 10.6 Theorem Proving in Lean.
+| []     := ∅
+| (h::t) := {h} ∪ list.to_set t
+
+-- This is predefined in Functional Algorithms Verified.
+def multiset.to_set: multiset α → set α :=  
+λ m: multiset α, {x: α | x ∈ m }
+
+-- This definition follows the definition in Functional Algorithms Verified instead of using the predefined function sort in Lean.
+def sorted' [is_total α r] [is_trans α r] : list α → Prop 
+| [] := true
+| (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ sorted' t
+
 /- 
 # Insertion sort
  -/
@@ -21,11 +39,6 @@ section Insertion_sort
 
 /- ## Functional Correctness
  -/
-
-variable {α : Type*}
-variable r:α → α → Prop
-variable x: α 
-variable xs: list α  
 
 lemma mset_insort [decidable_rel r] : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
 begin
@@ -45,14 +58,6 @@ begin
     refl }
 end 
 
-def list.to_set : list α → set α --Source: chapter 10.6 Theorem Proving in Lean.
-| []     := ∅
-| (h::t) := {h} ∪ list.to_set t
-
--- This is predefined in Functional Algorithms Verified.
-def multiset.to_set: multiset α → set α :=  
-λ m: multiset α, {x: α | x ∈ m }
-
 -- This lemma is predefined in the multiset file of Isabelle and used to prove lemma set_insort.
 lemma set_mset_mset: multiset.to_set ↑xs = list.to_set xs := 
 begin
@@ -66,33 +71,28 @@ begin
   simp [set.insert_def, ← set_mset_mset, mset_insort, multiset.to_set],
 end
 
--- This definition follows the definition in Functional Algorithms Verified.
-def is_sorted [is_total α r] [is_trans α r] : list α → Prop 
-| [] := true
-| (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ is_sorted t
-
-lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : is_sorted r (ordered_insert r x xs) = is_sorted r xs :=
+lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : sorted' r (ordered_insert r x xs) = sorted' r xs :=
 begin
   induction' xs fixing *, -- by using fixing the trans and total_of functions will work without mentioning the instances explicitly
-  { simp [is_sorted],
+  { simp [sorted'],
     intros,
     exact false.elim H },
   { simp only [ordered_insert],
     split_ifs,
-    { simp [is_sorted, list.to_set],
+    { simp [sorted', list.to_set],
       intros h1 h2,
       apply and.intro h,
       intros y h3, 
       have h4: y ∈ xs.to_set → r hd y, from h1 y,
       have h5: r hd y, from h4 h3,
       exact trans h h5 }, 
-    { simp [is_sorted, list.to_set, ih, set_insort],
+    { simp [sorted', list.to_set, ih, set_insort],
       intros h1 h2,
       have h3: r hd x ∨ r x hd, from total_of r hd x, 
       exact or.resolve_right h3 h } }
 end
 
-lemma sorted_isort [decidable_rel r] [is_trans α r] [is_total α r]: is_sorted r (insertion_sort r xs) :=
+lemma sorted_isort [decidable_rel r] [is_trans α r] [is_total α r]: sorted' r (insertion_sort r xs) :=
 begin
   induction' xs,
   { simp},
@@ -183,9 +183,7 @@ end Quicksort
 
 /- The function merge in Functional Algoriths Verified! is already defined in Lean as merge. The function msort is defined but in a slightly different way. Therefore, it is defined below in the same way, so the proof structure of the book can be followed. -/
 
-variable {α : Type*}
-variable r: α → α → Prop
-variables xs ys: list α 
+variables ys: list α 
 
 def msort: list α → list α :=
 sorry
@@ -194,20 +192,20 @@ sorry
 ## Functional Correctness
  -/
 
-lemma mset_merge [decidable_rel r]: (↑ (merge r xs ys): multiset α)  = ↑ xs + ↑ ys :=
+lemma mset_merge [d: decidable_rel r]: (↑ (merge r xs ys): multiset α)  = ↑ xs + ↑ ys :=
 begin
   simp,
   induction' xs,
   { induction' ys,
     { simp [merge]},
     simp [merge] },
-  induction' ys ,
+  induction' ys,
   { simp [merge] },
   simp [merge],
   split_ifs,
   { simp [ih] },
-  have h1: (∀ (r : α → α → Prop) (ys : list α) [_inst_1 : decidable_rel r], @merge _ r _inst_1 xs ys ~ xs ++ ys) → @merge _ r _inst_1 (hd :: xs) ys ~ hd :: xs ++ ys, from  @ih_ys r _inst_1 hd xs,  
-  have h2: @merge _ r _inst_1 (hd :: xs) ys ~ (hd :: xs) ++ ys, from h1 ih, 
+  have h1: (∀ (r : α → α → Prop) (ys : list α) [decidable_rel r], @merge _ r _inst_1 xs ys ~ xs ++ ys) → @merge _ r d (hd :: xs) ys ~ hd :: xs ++ ys, from  @ih_ys r d hd xs,  
+  have h2: @merge _ r d (hd :: xs) ys ~ (hd :: xs) ++ ys, from h1 ih, 
   simp [← list.cons_append] ,
   simp only [list.perm_cons_append_cons hd_1 h2],
 end  
@@ -220,15 +218,27 @@ end
 
 lemma mset_msort [decidable_rel r]: (↑ (merge_sort r xs):multiset α) = ↑ xs :=
 begin
-  simp,
-  induction' xs,
-  simp [merge_sort],
-  sorry
+  simp [perm_merge_sort],
 end
+
+lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
+begin
+  induction' xs,
+  { induction' ys,
+      simp [merge],
+    { simp [merge, sorted'] }},
+  { induction' ys,
+    { simp [merge, sorted'] },
+    have h: (@sorted' _ r t tr (@merge _ r d (hd :: xs) ys) ↔ @sorted' _ r t tr (hd :: xs) ∧ @sorted' _ r t tr ys), from @ih_ys r d t tr hd xs ih,
+    sorry
+     }
+end
+
+
 
 example (xs: list ℕ ): xs = xs.head::xs.tail :=
 begin
-  sorry
+  sorry,
 end
 
 #check list.cons  [2,3]
