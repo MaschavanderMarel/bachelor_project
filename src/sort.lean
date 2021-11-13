@@ -3,10 +3,13 @@ import data.multiset
 import data.set
 import tactic.induction
 import tactic.ring
+import algebra.order.field
 
 open list
 open multiset
 open set
+open list.perm
+open nat
 
 set_option trace.simplify.rewrite true
 
@@ -181,12 +184,38 @@ end Quicksort
 #eval merge (λ m n: ℕ, m < n) [1,3] [2,4]
 #eval merge_sort (λ m n: ℕ , m < n) [2,1,4,3]
 
-/- The function merge in Functional Algoriths Verified! is already defined in Lean as merge. The function msort is defined but in a slightly different way. Therefore, it is defined below in the same way, so the proof structure of the book can be followed. -/
+/- 
+The function merge from Functional Algoriths Verified! is already defined in Lean as merge. 
+The function msort is defined as merge_sort but in a different way. 
+Therefore, it is defined below in the same way making use of the length of the list and drop/take functions, so the proof structure of the book can be followed. 
+-/
 
-variables ys: list α 
+variable ys: list α 
 
-def msort: list α → list α :=
-sorry
+def msort [decidable_rel r]: list α → list α
+| xs := 
+  if h: 0 < xs.length/2 then
+  have (take (xs.length / 2) xs).length < xs.length, from 
+    begin
+      simp,
+      calc
+        xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
+        ... =  (xs.length / 2) * 2 : by ring
+        ... <=  xs.length : by apply nat.div_mul_le_self,
+    end,
+  have (drop (xs.length / 2) xs).length < xs.length, from  
+    begin 
+      simp,
+      have h1: 0 < xs.length, from calc
+        0 < xs.length/2 : h
+        ... <= xs.length : nat.div_le_self' xs.length 2,
+      exact nat.sub_lt h1 h 
+    end,
+  merge r (msort (take (xs.length/2) xs)) (msort (drop (xs.length/2) xs))
+  else xs
+using_well_founded {
+  rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
+  dec_tac := tactic.assumption }
 
 /- 
 ## Functional Correctness
@@ -265,8 +294,6 @@ begin
     exact trans (or.resolve_right h8 h) (h2 y h7)},
   exact h4 y,
 end
-
-#check @and.comm
 
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
 #eval merge_sort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
