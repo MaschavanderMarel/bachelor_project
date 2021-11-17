@@ -193,8 +193,8 @@ Therefore, it is defined below in the same way making use of the length of the l
 variable ys: list α 
 
 def msort [decidable_rel r]: list α → list α
-| xs := 
-  if h: 0 < xs.length/2 then
+| xs := begin
+  apply if h: 0 < xs.length/2 then
   have (take (xs.length / 2) xs).length < xs.length, from 
     begin
       simp,
@@ -213,9 +213,12 @@ def msort [decidable_rel r]: list α → list α
     end,
   merge r (msort (take (xs.length/2) xs)) (msort (drop (xs.length/2) xs))
   else xs
+end
 using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
+
+#print msort._main._pack
 
 /- 
 ## Functional Correctness
@@ -243,7 +246,35 @@ begin
   refl
 end
 
-lemma mset_msort [decidable_rel r]: (↑ (merge_sort r xs):multiset α) = ↑ xs :=
+lemma mset_msort [decidable_rel r]: ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
+| xs := begin
+  rw msort,
+  split_ifs,
+  { have h1: (take (xs.length / 2) xs).length < xs.length ∧ (drop (xs.length / 2) xs).length < xs.length, from 
+    begin
+      apply and.intro,
+      { simp,
+        calc
+          xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
+          ... =  (xs.length / 2) * 2 : by ring
+          ... <=  xs.length : by apply nat.div_mul_le_self },
+      simp,
+      have h1: 0 < xs.length, from calc
+        0 < xs.length/2 : h
+        ... <= xs.length : nat.div_le_self' xs.length 2,
+      exact nat.sub_lt h1 h, 
+    end,
+    rw mset_merge,
+    cases h1,
+    simp only [mset_msort (take (xs.length/2) xs)],
+    simp  [mset_msort (drop (xs.length/2) xs)] }, 
+  refl,
+end
+using_well_founded {
+  rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
+  dec_tac := tactic.assumption }
+
+lemma mset_msort2 [decidable_rel r]: (↑ (merge_sort r xs):multiset α) = ↑ xs :=
 begin
   simp [perm_merge_sort],
 end
