@@ -218,8 +218,6 @@ using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
 
-#print msort._main._pack
-
 /- 
 ## Functional Correctness
  -/
@@ -274,11 +272,6 @@ using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
 
-lemma mset_msort2 [decidable_rel r]: (↑ (merge_sort r xs):multiset α) = ↑ xs :=
-begin
-  simp [perm_merge_sort],
-end
-
 lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: 
   sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
@@ -326,5 +319,68 @@ begin
   exact h4 y,
 end
 
+lemma div_two_eq_zero_or_one {n: ℕ } (h: n/2 = 0): n = 0 ∨  n = 1 :=
+begin
+  apply classical.by_contradiction,
+  intro h1,
+  have h2: ¬ n = 0, from (iff.elim_left not_or_distrib h1).left,
+  have h3: ¬ n = 1, from (iff.elim_left not_or_distrib h1).right,
+  have h4: 0 < 2, by simp,
+  have h5: n/2 = 0 ↔ n <= 1, by calc
+    n / 2 = 0 ↔ n < 2 : nat.div_eq_zero_iff h4
+    ... ↔  n + 1 <= 1 + 1 : by ring
+    ... ↔  n <= 1 : by simp,
+  have h6: n <=1, from iff.elim_left h5 h,
+  have h7: n < 1, from nat.lt_of_le_and_ne h6 h3,
+  simp at *,
+  contradiction,
+end
+
+lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
+  ∀ xs: list α, sorted' r (msort r xs)
+| xs := 
+begin
+  rw msort,
+  split_ifs,
+  { have h1: (take (xs.length / 2) xs).length < xs.length ∧ (drop (xs.length / 2) xs).length < xs.length, from 
+    begin
+      apply and.intro,
+      { simp,
+        calc
+          xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
+          ... =  (xs.length / 2) * 2 : by ring
+          ... <=  xs.length : by apply nat.div_mul_le_self },
+      simp,
+      have h1: 0 < xs.length, from calc
+        0 < xs.length/2 : h
+        ... <= xs.length : nat.div_le_self' xs.length 2,
+      exact nat.sub_lt h1 h, 
+    end,
+    cases h1,
+    simp [sorted_merge],
+    simp only [sorted_msort (take (xs.length/2) xs)],
+    simp [sorted_msort (drop (xs.length/2) xs)] }, 
+  have h2: 0 = xs.length/2 ∨ xs.length/2 < 0 , from nat.eq_or_lt_of_not_lt h,
+  simp at h2,
+  have h1: xs.length = 0 ∨ xs.length = 1, from div_two_eq_zero_or_one h2.symm,
+  apply or.elim h1,
+  { intro h2,
+    have h3: xs = list.nil, from list.eq_nil_of_length_eq_zero h2,
+    simp [h3] },
+  intro h2,
+  have h3: ∃ (a : α), xs = [a], from iff.elim_left list.length_eq_one h2,
+  apply exists.elim h3,
+  intros a h4,
+  simp [h4, sorted'],
+  intros,
+  simp [list.to_set] at H,
+  exact false.elim H
+end
+using_well_founded {
+  rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
+  dec_tac := tactic.assumption }
+
+#eval nat.div 4 2
+
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
-#eval merge_sort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
+#eval msort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
