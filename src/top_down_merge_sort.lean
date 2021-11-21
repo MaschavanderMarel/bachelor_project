@@ -58,7 +58,8 @@ using_well_founded {
 ## Functional Correctness
  -/
 
-lemma mset_merge [d: decidable_rel r]: (↑ (merge r xs ys): multiset α)  = ↑ xs + ↑ ys :=
+lemma mset_merge [d: decidable_rel r]: 
+  (↑ (merge r xs ys): multiset α)  = ↑ xs + ↑ ys :=
 begin
   simp,
   induction' xs,
@@ -70,17 +71,18 @@ begin
   simp [merge],
   split_ifs,
   { simp [ih] },
-  simp [← list.cons_append] ,
-  simp only [list.perm_cons_append_cons hd_1 (@ih_ys _ _ _ _ ih)],
+  simp only [← list.cons_append, list.perm_cons_append_cons hd_1 (@ih_ys _ _ _ _ ih)]
 end  
 
-lemma set_merge [decidable_rel r]: (merge r xs ys).to_set = xs.to_set ∪ ys.to_set :=
+lemma set_merge [decidable_rel r]: 
+  (merge r xs ys).to_set = xs.to_set ∪ ys.to_set :=
 begin
   simp [← set_mset_mset, mset_merge, multiset.to_set],
   refl
 end
 
-lemma mset_msort [decidable_rel r]: ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
+lemma mset_msort [decidable_rel r]: 
+  ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
 | xs := begin
   rw msort,
   split_ifs,
@@ -155,6 +157,7 @@ begin
   exact h4 y,
 end
 
+-- This lemma is used in sorted_msort.
 lemma div_two_eq_zero_or_one {n: ℕ } (h: n/2 = 0): n = 0 ∨  n = 1 :=
 begin
   apply classical.by_contradiction,
@@ -216,8 +219,42 @@ using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
 
-#eval nat.div 4 2
+/-
+## Time Complexity
+We only count the number of comparisons between list elements
+-/
 
+def C_merge [decidable_rel r] : list α → list α → nat
+| [] _ := 0 
+| _ [] := 0
+| (x::xs) (y::ys) := 1 + (if r x y then C_merge xs (y::ys) else C_merge (x::xs) ys)
+
+lemma length_merge [decidable_rel r] : 
+  (merge r xs ys).length = xs.length + ys.length :=
+begin
+  induction' xs,
+  { induction' ys,
+    { simp [merge], },
+    simp [merge],},
+  induction' ys,  
+  { simp [merge]} ,
+  simp [merge],
+  split_ifs,
+  { simp [ih],
+    cc },
+  simp *,
+  cc
+end
+
+lemma length_msort [decidable_rel r]:
+  (msort r xs).length = xs.length :=
+begin
+  rw msort,
+  sorry
+end
+
+ 
+#eval C_merge (λ m n : ℕ, m ≤ n) ([1,3,2]: list ℕ ) [4,0,3,7] 
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
 #eval msort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
 
