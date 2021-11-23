@@ -26,7 +26,7 @@ def multiset.to_set: multiset α → set α :=
 
 /-
 This definition follows the definition in Functional Algorithms Verified 
-instead of using the predefined function sort in Lean.
+instead of using the predefined function sorted in Lean.
 -/
 def sorted' [is_total α r] [is_trans α r] : list α → Prop 
 | [] := true
