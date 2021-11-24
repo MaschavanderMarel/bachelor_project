@@ -114,7 +114,7 @@ lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]:
   sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
   induction' xs,
-  {  induction' ys,
+  {  cases ys,
     { simp [merge] },
     simp [merge, sorted'], },
   induction' ys fixing *,
@@ -276,12 +276,30 @@ using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
 
-def min_default' {α : Type*} [has_le α] [decidable_rel ((≤) : α → α → Prop)] (a b : α) :=
-if a ≤ b then a else b
+lemma C_merge_ub [d: decidable_rel r] : C_merge r xs ys <= xs.length + ys.length :=
+begin
+  induction' xs,
+  { cases ys,
+    { simp [C_merge]},
+    simp [C_merge] },
+  induction' ys fixing *,
+  { simp [C_merge]},
+  simp only [C_merge],
+  split_ifs,
+  { have ih': C_merge r xs (hd_1::ys) ≤ xs.length + (hd_1::ys).length, from ih r (hd_1::ys),
+    simp at *,
+    calc
+      1 + C_merge r xs (hd_1 :: ys) = C_merge r xs (hd_1 :: ys) + 1 : by simp [add_comm]
+      ... <= xs.length + (ys.length + 1) + 1 : by simp [ih']
+      ... = xs.length + 1 + (ys.length + 1) : by simp [add_assoc, add_comm]},
+  simp at *,
+  calc
+    1 + C_merge r (hd :: xs) ys = C_merge r (hd :: xs) ys + 1 : by ring
+    ... <= xs.length + 1 + ys.length + 1 : by simp [ih_ys]
+    ... = xs.length + 1 + (ys.length + 1) : by ring,
+end
 
-#check [1,2].length
-#eval min 3 2
-
+#eval (1::[2,3]).length
 #eval C_merge (λ m n : ℕ, m ≤ n) ([1,3,2]: list ℕ ) [4,0,3,7] 
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
 #eval msort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
