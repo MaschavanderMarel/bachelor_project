@@ -177,12 +177,12 @@ end
 
 lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
   ∀ xs: list α, sorted' r (msort r xs)
-| xs := 
-begin
+| xs := begin
+  let ys := take (xs.length /2) xs,
+  let zs := drop (xs.length / 2) xs,
   rw msort,
   split_ifs,
-  { have h1: (take (xs.length / 2) xs).length < xs.length ∧ (drop (xs.length / 2) xs).length < xs.length, from 
-    begin
+  { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
       apply and.intro,
       { simp,
         calc
@@ -197,8 +197,8 @@ begin
     end,
     cases h1,
     simp [sorted_merge],
-    simp only [sorted_msort (take (xs.length/2) xs)],
-    simp [sorted_msort (drop (xs.length/2) xs)] }, 
+    simp only [sorted_msort ys],
+    simp [sorted_msort zs] }, 
   have h2: 0 = xs.length/2 ∨ xs.length/2 < 0 , from nat.eq_or_lt_of_not_lt h,
   simp at h2,
   have h1: xs.length = 0 ∨ xs.length = 1, from div_two_eq_zero_or_one h2.symm,
@@ -247,13 +247,41 @@ begin
 end
 
 lemma length_msort [decidable_rel r]:
-  (msort r xs).length = xs.length :=
-begin
+  ∀ xs, (msort r xs).length = xs.length
+| xs := begin
+  let ys := take (xs.length /2) xs,
+  let zs := drop (xs.length / 2) xs,
   rw msort,
-  sorry
+  split_ifs,
+  { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
+      apply and.intro,
+      { simp,
+        calc
+          xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
+          ... =  (xs.length / 2) * 2 : by ring
+          ... <=  xs.length : by apply nat.div_mul_le_self },
+      simp,
+      have h1: 0 < xs.length, from calc
+        0 < xs.length/2 : h
+        ... <= xs.length : nat.div_le_self' xs.length 2,
+      exact nat.sub_lt h1 h, 
+    end,
+    cases h1,
+    simp [length_merge, length_msort ys, length_msort zs, *] at *,
+    have h2: xs.length / 2 <= xs.length, by linarith,
+    simp [*, ← nat.add_sub_assoc h2], },
+  refl,
 end
+using_well_founded {
+  rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
+  dec_tac := tactic.assumption }
 
- 
+def min_default' {α : Type*} [has_le α] [decidable_rel ((≤) : α → α → Prop)] (a b : α) :=
+if a ≤ b then a else b
+
+#check [1,2].length
+#eval min 3 2
+
 #eval C_merge (λ m n : ℕ, m ≤ n) ([1,3,2]: list ℕ ) [4,0,3,7] 
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
 #eval msort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])

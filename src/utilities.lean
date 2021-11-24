@@ -4,7 +4,7 @@ import data.set
 import tactic.induction
 import tactic.ring
 import algebra.order.field
-import tactic.induction
+import tactic.linarith
 
 set_option trace.simplify.rewrite true
 
