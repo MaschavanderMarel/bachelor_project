@@ -229,6 +229,35 @@ def C_merge [decidable_rel r] : list α → list α → nat
 | _ [] := 0
 | (x::xs) (y::ys) := 1 + (if r x y then C_merge xs (y::ys) else C_merge (x::xs) ys)
 
+def C_msort [decidable_rel r]: list α → ℕ 
+| xs := begin
+  let n := xs.length,
+  let ys := take (n / 2) xs,
+  let zs := drop (n /2) xs,
+  apply if h: 0 < n / 2 then  
+  have ys.length < xs.length, from     
+    begin
+      simp *,
+      calc
+        xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
+        ... =  (xs.length / 2) * 2 : by ring
+        ... <=  xs.length : by apply nat.div_mul_le_self,
+    end,
+  have zs.length < xs.length, from     
+    begin 
+      simp,
+      have h1: 0 < xs.length, from calc
+        0 < xs.length/2 : h
+        ... <= xs.length : nat.div_le_self' xs.length 2,
+      exact nat.sub_lt h1 h 
+    end,
+  C_msort ys + C_msort zs + C_merge r (msort r ys) (msort r zs) 
+  else 0
+end
+using_well_founded {
+  rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
+  dec_tac := tactic.assumption }
+
 lemma length_merge [decidable_rel r] : 
   (merge r xs ys).length = xs.length + ys.length :=
 begin
@@ -299,6 +328,7 @@ begin
     ... = xs.length + 1 + (ys.length + 1) : by ring,
 end
 
+#eval C_msort (λ m n , m <= n) [2,1,3]
 #eval (1::[2,3]).length
 #eval C_merge (λ m n : ℕ, m ≤ n) ([1,3,2]: list ℕ ) [4,0,3,7] 
 #eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
