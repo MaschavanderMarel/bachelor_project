@@ -231,11 +231,8 @@ def C_merge [decidable_rel r] : list α → list α → nat
 
 def C_msort [decidable_rel r]: list α → ℕ 
 | xs := begin
-  let n := xs.length,
-  let ys := take (n / 2) xs,
-  let zs := drop (n /2) xs,
-  apply if h: 0 < n / 2 then  
-  have ys.length < xs.length, from     
+  apply if h: 0 < xs.length / 2 then  
+  have (take (xs.length / 2) xs).length < xs.length, from     
     begin
       simp *,
       calc
@@ -243,7 +240,7 @@ def C_msort [decidable_rel r]: list α → ℕ
         ... =  (xs.length / 2) * 2 : by ring
         ... <=  xs.length : by apply nat.div_mul_le_self,
     end,
-  have zs.length < xs.length, from     
+  have (drop (xs.length /2) xs).length < xs.length, from     
     begin 
       simp,
       have h1: 0 < xs.length, from calc
@@ -251,7 +248,7 @@ def C_msort [decidable_rel r]: list α → ℕ
         ... <= xs.length : nat.div_le_self' xs.length 2,
       exact nat.sub_lt h1 h 
     end,
-  C_msort ys + C_msort zs + C_merge r (msort r ys) (msort r zs) 
+  C_msort (take (xs.length / 2) xs) + C_msort (drop (xs.length /2) xs) + C_merge r (msort r (take (xs.length / 2) xs)) (msort r (drop (xs.length /2) xs)) 
   else 0
 end
 using_well_founded {
@@ -305,6 +302,7 @@ using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
 
+
 lemma C_merge_ub [d: decidable_rel r] : C_merge r xs ys <= xs.length + ys.length :=
 begin
   induction' xs,
@@ -328,6 +326,77 @@ begin
     ... = xs.length + 1 + (ys.length + 1) : by ring,
 end
 
+lemma C_msort_le [decidable_rel r] (k: ℕ ) : xs.length = 2^k → C_msort r xs <= k * 2^k :=
+begin
+  induction k with k ih generalizing xs,
+  { simp,
+    intro h,
+    have h1: ¬  0 < xs.length / 2, by 
+    { simp *,
+      ring },
+    rw [C_msort, if_neg h1] },
+  intro h,
+  rw C_msort,
+  split_ifs,
+  { have h2: (take (xs.length / 2) xs).length = 2 ^ k, from sorry,
+    have h3: (drop (xs.length / 2) xs).length = 2 ^ k, from sorry,
+    have h4: C_msort r (take (xs.length / 2) xs) ≤ k * 2 ^ k, from ih (take (xs.length/2) xs) h2,
+    have h5: C_msort r (drop (xs.length / 2) xs) ≤ k * 2 ^ k, from ih (drop (xs.length/2) xs) h3,
+    simp * ,
+    calc
+      C_msort r (take (2 ^ k.succ / 2) xs) + C_msort r (drop (2 ^ k.succ / 2) xs) + C_merge r (msort r (take (2 ^ k.succ / 2) xs)) (msort r (drop (2 ^ k.succ / 2) xs)) <= C_msort r (take (2 ^ k.succ / 2) xs) + C_msort r (drop (2 ^ k.succ / 2) xs) + (msort r (take (2 ^ k.succ / 2) xs)).length + (msort r (drop (2 ^ k.succ / 2) xs)).length : by simp [add_assoc, C_merge_ub]
+      ... = C_msort r (take (2 ^ k.succ / 2) xs) + C_msort r (drop (2 ^ k.succ / 2) xs) + (take (2 ^ k.succ / 2) xs).length + (drop (2 ^ k.succ / 2) xs).length : by simp only [length_msort]
+      ... <= k * 2^k + k * 2^k + (take (2 ^ k.succ / 2) xs).length + (drop (2 ^ k.succ / 2) xs).length : by sorry
+      ... = k * 2^k + k * 2^k + (take (2 ^ k) xs).length + (drop (2 ^ k) xs).length : by sorry 
+      ... ≤ k.succ * 2 ^ k.succ : sorry },
+  simp,
+end
+
+lemma take_drop_eq_length (n: ℕ ) : (take n xs).length + (drop n xs).length = xs.length:=
+begin
+  simp,
+  have h1: n <= xs.length ∨ ¬ n <= xs.length, from classical.em (n <= xs.length),
+  cases h1,
+  { simp [min_def, if_pos h1, ← nat.add_sub_assoc h1], },
+  simp [min_def],
+  simp [if_neg h1, *] at *,
+  have h2: xs.length <= n, by linarith,
+  apply nat.sub_eq_zero_of_le h2,
+end
+
+lemma C_msort_le' [decidable_rel r] (k: ℕ ) : xs.length = 2^k → C_msort r xs <= k * 2^k :=
+begin
+  induction k with k ih generalizing xs,
+  { simp,
+    intro h,
+    have h1: ¬  0 < xs.length / 2, by 
+    { simp *,
+      ring },
+    rw [C_msort, if_neg h1] },
+  intro h,
+  rw C_msort,
+  split_ifs,
+  { have h2: (take (xs.length / 2) xs).length = 2 ^ k, from sorry,
+    have h3: (drop (xs.length / 2) xs).length = 2 ^ k, from sorry,
+    have h4: C_msort r (take (xs.length / 2) xs) ≤ k * 2 ^ k, from ih (take (xs.length/2) xs) h2,
+    have h5: C_msort r (drop (xs.length / 2) xs) ≤ k * 2 ^ k, from ih (drop (xs.length/2) xs) h3,
+    calc
+    C_msort r (take (xs.length / 2) xs) + C_msort r (drop (xs.length / 2) xs) + C_merge r (msort r (take (xs.length / 2) xs)) (msort r (drop (xs.length / 2) xs)) <=  C_msort r (take (xs.length / 2) xs) + C_msort r (drop (xs.length / 2) xs) + (msort r (take (xs.length / 2) xs)).length + (msort r (drop (xs.length / 2) xs)).length : by simp [add_assoc, C_merge_ub ]
+    ... = C_msort r (take (xs.length / 2) xs) + C_msort r (drop (xs.length / 2) xs) + (take (xs.length / 2) xs).length + (drop (xs.length / 2) xs).length : by simp only [length_msort]
+    ... <= k * 2^k + k * 2^k + (take (xs.length / 2) xs).length + (drop (xs.length / 2) xs).length : by linarith
+    ... = k * 2^k + k * 2^k + 2^k.succ : by simp only [add_assoc, take_drop_eq_length, h]
+    ... = k * 2 * 2^k + 2^k.succ : by ring
+    ... = k * 2^k.succ + 2^k.succ : by sorry
+    ... = k.succ * 2 ^ k.succ : by sorry, },
+  simp,
+end
+
+example (n: ℤ  ) [group ℕ   ] (a: ℕ ) : a ^ (n + 1) = (a ^ n) * a :=
+-- gpow_add_one a n
+sorry
+
+#check gpow_add_one 
+#check 2
 #eval C_msort (λ m n , m <= n) [2,1,3]
 #eval (1::[2,3]).length
 #eval C_merge (λ m n : ℕ, m ≤ n) ([1,3,2]: list ℕ ) [4,0,3,7] 
