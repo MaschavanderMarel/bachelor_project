@@ -331,12 +331,13 @@ begin
   simp,
   have h1: n <= xs.length ∨ ¬ n <= xs.length, from classical.em (n <= xs.length),
   cases h1,
-  { simp [min_def, if_pos h1, ← nat.add_sub_assoc h1], },
-  simp [min_def],
-  simp [if_neg h1, *] at *,
+  { simp [*, ← nat.add_sub_assoc h1], },
   have h2: xs.length <= n, by linarith,
-  apply h2,
+  simp *,
 end
+
+example (a b : ℕ ) (h: b <= a) : min a b = b :=
+by simp [*]
 
 lemma C_msort_le [decidable_rel r] (k: ℕ ) : xs.length = 2^k → C_msort r xs <= k * 2^k :=
 begin
