@@ -129,21 +129,3 @@ begin
     }
 end
 
-/- 
-# Quicksort
- -/
-
-section Quicksort
-
--- def quicksort : list ℕ  → list ℕ    
--- | [] := []
--- | (x::xs) :=  have (list.filter (λ (y : ℕ), y < x) xs).sizeof < 1 + x + xs.sizeof, from sorry,
---               have (list.filter (has_le.le x) xs).sizeof < 1 + x + xs.sizeof, from sorry,
---               quicksort (xs.filter (λ y: ℕ  , y < x)) ++ [x] ++ quicksort (xs.filter (λ y: ℕ , y ≥ x))   
-
-end Quicksort
-
--- #eval quicksort [3,2,1]
--- quicksort is defined in library
-#eval list.qsort (λ m n: ℕ , m < n) [2,1]
-
