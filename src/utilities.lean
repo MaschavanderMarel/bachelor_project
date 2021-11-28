@@ -15,7 +15,7 @@ variable r: α → α → Prop
 variable xs: list α 
 
 /-
-This files contains some functions that are predefined in Function Algorithms Verifie, 
+This files contains some functions that are predefined in Function Algorithms Verified, 
 but not in Lean
 -/
 
@@ -40,3 +40,4 @@ begin
   { refl},
   { simp [list.to_set,← ih, multiset.to_set, set.insert_def] }
 end 
+

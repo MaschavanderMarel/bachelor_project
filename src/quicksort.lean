@@ -53,7 +53,7 @@ def quicksort [decidable_rel r]: list α → list α
 -/
 
 lemma mset_quicksort [decidable_rel r]: 
-  ∀ xs: list α,  ((quicksort r xs): multiset α)  = (↑xs: multiset α )
+  ∀ xs: list α,  (↑(quicksort r xs): multiset α)  = (↑xs: multiset α )
 | [] := by simp only [quicksort]
 | (x::xs) :=  
 begin
@@ -69,7 +69,10 @@ begin
   simp,
 end
 
-
+lemma set_quicksort [decidable_rel r]: (quicksort r xs).to_set = xs.to_set :=
+begin
+  simp [← set_mset_mset, mset_quicksort],
+end
 
 #check @well_founded_qs
 #eval ({1,1,2}:multiset ℕ ) + {2,3}
