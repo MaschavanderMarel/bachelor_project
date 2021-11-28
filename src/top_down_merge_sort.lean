@@ -15,15 +15,11 @@ variable xs: list α
 
 /- 
 # Top-Down Merge Sort
--/
 
-#eval merge (λ m n: ℕ, m < n) [1,3] [2,4]
-#eval merge_sort (λ m n: ℕ , m < n) [2,1,4,3]
-
-/- 
 The function merge from Functional Algoriths Verified! is already defined in Lean as merge. 
 The function msort is defined as merge_sort but in a different way. 
-Therefore, it is defined below in the same way making use of the length of the list and drop/take functions, so the proof structure of the book can be followed. 
+Therefore, it is defined below in the same way making use of the length of the list and drop/take functions, 
+so the proof structure of the book can be followed. 
 -/
 
 variable ys: list α 
@@ -377,10 +373,4 @@ begin
     ... = k.succ * 2^k.succ : by simp, },
   simp,
 end
-
-#eval C_msort (λ m n , m <= n) [2,1,3]
-#eval (1::[2,3]).length
-#eval C_merge (λ m n : ℕ, m ≤ n) ([1,3,2]: list ℕ ) [4,0,3,7] 
-#eval merge_sort (λ m n : ℕ, m ≤ n) [23,1, 12]
-#eval msort (λ m n : ℕ, m ≤ n) (30 ::15::[23,12])
 

@@ -29,7 +29,7 @@ lemma well_founded_qs [decidable_rel r]:  (list.filter (λ (y), r y x) xs).sizeo
     linarith
   end
 
-lemma well_founded_qs' [decidable_rel r]:  (list.filter (λ (y),¬ r y x) xs).sizeof < 1 + xs.sizeof :=
+lemma well_founded_qs' [decidable_rel r]: (list.filter (λ (y),¬ r y x) xs).sizeof < 1 + xs.sizeof :=
 begin
     induction xs,
     {   simp},
@@ -48,11 +48,29 @@ def quicksort [decidable_rel r]: list α → list α
   have (list.filter (λ (y : α), ¬r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs',
   quicksort (xs.filter (λ y: α, r y x)) ++ [x] ++ quicksort (xs.filter (λ y: α  , ¬ r y x))   
 
-#eval list.sizeof [1,1] 
-#eval sizeof 3
+/-
+## Functional Correctness
+-/
 
-#eval list.filter (λ x: ℕ , x > 1) [2,3,1]
-#check (λ x y: ℕ , x > y)
-#eval quicksort (λ n m :ℕ , ¬ n < m) [3,2,1]
--- quicksort is defined in library
+lemma mset_quicksort [decidable_rel r]: 
+  ∀ xs: list α,  ((quicksort r xs): multiset α)  = (↑xs: multiset α )
+| [] := by simp only [quicksort]
+| (x::xs) :=  
+begin
+  rw quicksort,
+  repeat {rw ← multiset.coe_add} ,
+  have h1: (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof ∧ (list.filter (λ (y),¬ r y x) xs).sizeof < 1 + xs.sizeof , from begin
+    apply and.intro,
+    { apply well_founded_qs},
+    apply well_founded_qs',
+  end,
+  cases h1,
+  simp only [mset_quicksort (filter (λ (y : α), r y x) xs), mset_quicksort (filter (λ (y : α), ¬ r y x) xs), ← multiset.coe_filter, add_comm, add_assoc, multiset.filter_add_not],
+  simp,
+end
+
+
+
+#check @well_founded_qs
+#eval ({1,1,2}:multiset ℕ ) + {2,3}
 #eval list.qsort (λ m n: ℕ , m > n) [2,1]
