@@ -69,11 +69,52 @@ begin
   simp,
 end
 
+#check mset_quicksort
+
 lemma set_quicksort [decidable_rel r]: (quicksort r xs).to_set = xs.to_set :=
 begin
   simp [← set_mset_mset, mset_quicksort],
 end
 
-#check @well_founded_qs
-#eval ({1,1,2}:multiset ℕ ) + {2,3}
-#eval list.qsort (λ m n: ℕ , m > n) [2,1]
+lemma sorted_quicksort [decidable_rel r] [is_trans α r] [is_total α r] : 
+  ∀ xs, sorted' r (quicksort r xs)
+| [] := by simp [quicksort]
+| (x::xs) := 
+begin
+  rw quicksort,
+  simp [sorted'_append],
+  have h1: (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof ∧ (list.filter (λ (y),¬ r y x) xs).sizeof < 1 + xs.sizeof , from begin
+    apply and.intro,
+    { apply well_founded_qs},
+    apply well_founded_qs',
+  end,
+  cases h1,
+  apply and.intro,
+  { simp only [sorted_quicksort (filter (λ (y : α), r y x) xs)],},
+  apply and.intro,
+  { simp [sorted'],
+    apply and.intro,
+    { simp [set_quicksort],
+      intros,
+      simp [← set_mset_mset, multiset.to_set] at H,
+      exact or.resolve_right (total_of r x y) H.right},
+    simp only [sorted_quicksort (filter (λ (y : α), ¬ r y x) xs)]},
+  intros,
+  have h1: x_1 ∈ (↑(quicksort r (filter (λ (y : α), r y x) xs)): multiset α ), by simp [H],
+  have h3: x_1 ∈ (↑ (filter (λ (y : α), r y x) xs): multiset α), from eq.subst (mset_quicksort r (filter (λ y, r y x) xs)) h1,
+  simp at h3,
+  apply and.intro,
+  { exact h3.right},
+  intros a h1,
+  have h2: a ∈ (↑(quicksort r (filter (λ y, ¬ r y x) xs)): multiset α ), by simp [h1],
+  have h5: a ∈ (↑ (filter (λ y, ¬ r y x) xs): multiset α), from eq.subst (mset_quicksort r (filter (λ y, ¬ r y x) xs)) h2,
+  simp at h5,
+  have h4: r x a , from or.resolve_left (total_of r a x) h5.right,
+  exact trans h3.right h4,
+end
+
+/- 
+## Time Complexity
+Like in Functional Algorithms Verified the running time is not analyzed, 
+because it is well known that it is quadratic in the worst case but sort of O(n lg n) on average. 
+ -/
