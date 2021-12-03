@@ -46,3 +46,10 @@ begin
   simp [← multiset.cons_coe, ih],
 end
 
+lemma mset_isort_key [decidable_rel r]: (↑ (isort_key r f xs): multiset α) = ↑ xs :=
+begin
+  induction' xs,
+  { refl},
+  simp [mset_insort_key, isort_key, ih],
+  refl,
+end
