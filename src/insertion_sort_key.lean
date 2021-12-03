@@ -18,11 +18,11 @@ variable f: α → κ
 # Insertion Sort w.r.t. Keys and Stability
 -/
 
-def insort_key [decidable_rel r]  : list α → list α     
+def insort_key [decidable_rel r] [is_linear_order κ r] : list α → list α     
 | []       := [x]
 | (y :: ys) := if r (f x) (f y) then x :: y :: ys else y :: insort_key ys
 
-def isort_key [decidable_rel r]: list α → list α
+def isort_key [decidable_rel r] [is_linear_order κ r]: list α → list α
 | []       := []
 | (x :: xs) := insort_key r x f (isort_key xs)
 
@@ -39,7 +39,7 @@ def isort_key [decidable_rel r]: list α → list α
 ## Functional Correctness
  -/
 
-lemma mset_insort_key [decidable_rel r]:
+lemma mset_insort_key [decidable_rel r] [is_linear_order κ r]:
   ((insort_key r x f xs): multiset α) = {x} + ↑ xs :=
 begin
   induction' xs,
@@ -50,7 +50,7 @@ begin
   simp [← multiset.cons_coe, ih],
 end
 
-lemma mset_isort_key [decidable_rel r]: (↑ (isort_key r f xs): multiset α) = ↑ xs :=
+lemma mset_isort_key [decidable_rel r] [is_linear_order κ r]: (↑ (isort_key r f xs): multiset α) = ↑ xs :=
 begin
   induction' xs,
   { refl},
@@ -58,18 +58,18 @@ begin
   refl,
 end
 
-lemma set_insort_key [decidable_rel r]: (insort_key r x f xs).to_set = {x} ∪ xs.to_set:=
+lemma set_insort_key [decidable_rel r] [is_linear_order κ r]: (insort_key r x f xs).to_set = {x} ∪ xs.to_set:=
 begin
   simp [← set_mset_mset, mset_insort_key, multiset.to_set],
   refl
 end
 
-lemma set_isort_key [decidable_rel r] : (isort_key r f xs).to_set = xs.to_set :=
+lemma set_isort_key [decidable_rel r] [is_linear_order κ r]: (isort_key r f xs).to_set = xs.to_set :=
 begin
   simp [← set_mset_mset, mset_isort_key],
 end
 
-lemma sorted_insort_key [decidable_rel r] [is_trans κ  r] [is_total κ  r]: 
+lemma sorted_insort_key [decidable_rel r] [is_linear_order κ r]: 
   sorted' r ((insort_key r x f xs).map f) = sorted' r (xs.map f) :=
 begin
   induction' xs fixing *,
@@ -90,7 +90,7 @@ begin
   exact or.resolve_left (total_of r (f x) (f hd)) h
 end
 
-lemma sorted_isort_key [decidable_rel r] [is_trans κ r] [is_total κ r] : 
+lemma sorted_isort_key [decidable_rel r] [is_linear_order κ r] : 
   sorted' r (map f (isort_key r f xs)) :=
 begin
   induction' xs,
@@ -102,7 +102,7 @@ end
 ## Stability
 -/
 
-lemma insort_is_Cons [decidable_rel r]: (∀ a ∈ xs.to_set, r (f x) (f a)) → (insort_key r x f xs = (x:: xs)):=
+lemma insort_is_Cons [decidable_rel r] [is_linear_order κ r]: (∀ a ∈ xs.to_set, r (f x) (f a)) → (insort_key r x f xs = (x:: xs)):=
 begin
   cases xs,
   { simp [insort_key] },
