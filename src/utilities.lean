@@ -6,7 +6,6 @@ import tactic.ring
 import algebra.order.field
 import tactic.linarith
 import algebra.group_power.order
--- import algebra.group_power.lemmas
 
 set_option trace.simplify.rewrite true
 
