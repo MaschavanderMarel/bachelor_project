@@ -11,7 +11,7 @@ set_option trace.simplify.rewrite true
 variables {α : Type*} {κ : Type*}
 variable r: κ → κ → Prop
 variable x: α 
--- variable xs: list α
+variable xs: list α
 variable f: α → κ     
 
 /- 
@@ -35,4 +35,14 @@ def isort_key [decidable_rel r]: list α → list α
 ## Functional Correctness
  -/
 
--- lemma mset_insort_key: 
+lemma mset_insort_key [decidable_rel r]:
+  ((insort_key r x f xs): multiset α) = {x} + ↑ xs :=
+begin
+  induction' xs,
+  { refl},
+  simp [insort_key],
+  split_ifs,
+  { refl},
+  simp [← multiset.cons_coe, ih],
+end
+
