@@ -10,7 +10,7 @@ set_option trace.simplify.rewrite true
 
 variables {α : Type*} {κ : Type*}
 variable r: κ → κ → Prop
-variable x: α 
+variables x: α 
 variable xs: list α
 variable f: α → κ     
 
@@ -18,7 +18,7 @@ variable f: α → κ
 # Insertion Sort w.r.t. Keys and Stability
 -/
 
-def insort_key [decidable_rel r] : list α → list α     
+def insort_key [decidable_rel r]  : list α → list α     
 | []       := [x]
 | (y :: ys) := if r (f x) (f y) then x :: y :: ys else y :: insort_key ys
 
@@ -97,3 +97,16 @@ begin
   { simp [isort_key] },
   simp [isort_key, sorted_insort_key, ih]
 end
+
+/-
+## Stability
+-/
+
+lemma insort_is_Cons [decidable_rel r]: (∀ a ∈ xs.to_set, r (f x) (f a)) → (insort_key r x f xs = (x:: xs)):=
+begin
+  cases xs,
+  { simp [insort_key] },
+  simp [list.to_set, insort_key],
+  intros h h1 h2,
+  cc,
+end 
