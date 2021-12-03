@@ -47,7 +47,7 @@ end
 
 lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : sorted' r (ordered_insert r x xs) = sorted' r xs :=
 begin
-  induction' xs fixing *, -- by using fixing the trans and total_of functions will work without mentioning the instances explicitly
+  induction' xs fixing *, -- by using fixing the trans and total_of functions work without mentioning the instances explicitly
   { simp [sorted'],
     intros,
     exact false.elim H },
@@ -62,8 +62,7 @@ begin
       exact trans h h5 }, 
     { simp [sorted', list.to_set, ih, set_insort],
       intros h1 h2,
-      have h3: r hd x ∨ r x hd, from total_of r hd x, 
-      exact or.resolve_right h3 h } }
+      exact or.resolve_right (total_of r hd x) h } }
 end
 
 lemma sorted_isort [decidable_rel r] [is_trans α r] [is_total α r]: sorted' r (insertion_sort r xs) :=
