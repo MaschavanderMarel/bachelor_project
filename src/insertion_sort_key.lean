@@ -10,7 +10,7 @@ set_option trace.simplify.rewrite true
 
 variables {α : Type*} {κ : Type*}
 variable r: κ → κ → Prop
-variables x: α 
+variables (x: α) (k: κ ) 
 variable xs: list α
 variable f: α → κ 
 variable P: α → Prop    
@@ -104,7 +104,7 @@ end
 -/
 
 lemma insort_is_Cons [decidable_rel r] [is_linear_order κ r]: 
-  (∀ a ∈ xs.to_set, r (f x) (f a)) → (insort_key r x f xs = (x:: xs)):=
+  (∀ a ∈ xs.to_set, r (f x) (f a)) → insort_key r x f xs = (x:: xs):=
 begin
   cases xs,
   { simp [insort_key] },
@@ -129,3 +129,46 @@ begin
 end
 
 #check @filter_insort_key_neg
+
+lemma filter_insort_key_pos [decidable_rel r] [is_linear_order κ r] [decidable_pred P]:
+  sorted' r (xs.map f) ∧ P x → (insort_key r x f xs).filter P = insort_key r x f (xs.filter P) :=
+begin
+  induction xs,
+  { intro,
+    simp [insort_key, *] },
+  simp [sorted', list.filter, insort_key],
+  split_ifs,
+  { intros,
+    simp [insort_key, *] },
+  { have h5: (∀ a ∈ (list.filter P xs_tl).to_set, r (f x) (f a)) → insort_key r x f (filter P     xs_tl) = (x:: (filter P xs_tl)), from insort_is_Cons r x (filter P xs_tl) f,
+    simp [ ← member_list_set] at h5 |-,
+    intros h2 h3 h4,
+    have h6: ∀ (a : α), a ∈ xs_tl → P a → r (f x) (f a), from begin
+      intros a h7 h8,
+      exact trans_of r h (h2 a h7),
+    end,
+    simp [*, h5 h6] },
+  { intros,
+    simp [list.filter, *, insort_key] },
+  intros,
+  simp [list.filter, *],
+end
+
+lemma sort_key_stable [decidable_rel r] [is_linear_order κ r] [decidable_pred (λ y, f y = k)]: 
+  (isort_key r f xs).filter (λ y, f y = k) = xs.filter (λ y, f y = k):=
+begin
+  induction xs,
+  { simp [isort_key] },
+  simp [list.filter],
+  split_ifs,
+  { simp [isort_key, *, filter_insort_key_pos, sorted_isort_key, ← member_list_set],
+    have h1: (∀ a ∈ (list.filter (λ (y : α), f y = k) xs_tl).to_set, r (f _) (f a)) → insort_key r _ f _ = (_:: _) , from insort_is_Cons r xs_hd (filter (λ (y : α), f y = k) xs_tl) f,
+    have h3: ∀ (a : α), a ∈ (list.filter (λ (y : α), f y = k) xs_tl).to_set → r (f xs_hd) (f a), from begin
+      intros,
+      simp [← member_list_set, *] at *,
+      exact refl_of r k,
+    end,
+    exact h1 h3 },
+  simp [isort_key, filter_insort_key_neg, *],
+end
+
