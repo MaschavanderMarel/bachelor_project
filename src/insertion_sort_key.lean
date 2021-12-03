@@ -54,6 +54,12 @@ begin
   refl,
 end
 
+lemma set_insort_key [decidable_rel r]: (insort_key r x f xs).to_set = {x} ∪ xs.to_set:=
+begin
+  simp [← set_mset_mset, mset_insort_key, multiset.to_set],
+  refl
+end
+
 lemma set_isort_key [decidable_rel r] : (isort_key r f xs).to_set = xs.to_set :=
 begin
   simp [← set_mset_mset, mset_isort_key],
