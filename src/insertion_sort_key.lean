@@ -30,6 +30,10 @@ def isort_key [decidable_rel r]: list α → list α
 #eval insort_key (λ m n: ℤ  , m <= n) 2 (λ x, x+1)  [1,3]
 #check @isort_key
 #eval isort_key (λ m n: ℤ, m <=n) (λ x, x*-1) [2,3,1]
+#check @list.map  
+#eval list.map (λ x, x+ 1) [1,2,3]
+#eval [1,2,3].map (λ x, x * 2)
+#check @sorted'
 
 /-
 ## Functional Correctness
@@ -63,4 +67,26 @@ end
 lemma set_isort_key [decidable_rel r] : (isort_key r f xs).to_set = xs.to_set :=
 begin
   simp [← set_mset_mset, mset_isort_key],
+end
+
+lemma sorted_insort_key [decidable_rel r] [is_trans κ  r] [is_total κ  r]: 
+  sorted' r ((insort_key r x f xs).map f) = sorted' r (xs.map f) :=
+begin
+  induction' xs fixing *,
+  { simp [insort_key, sorted'],
+    intros,
+    exact false.elim H},
+  simp [insort_key],
+  split_ifs,
+  { simp [sorted', list.to_set],
+    intros h1 h2,
+    apply and.intro h,
+    intros k h3,
+    have h4: r (f hd) k, from h1 k h3,
+    exact trans h h4 },
+  simp [sorted', ih],
+  intros h1,
+  simp [← set_mset_mset, ← multiset.coe_map, mset_insort_key, multiset.to_set],
+  intros h2,
+  exact or.resolve_left (total_of r (f x) (f hd)) h
 end
