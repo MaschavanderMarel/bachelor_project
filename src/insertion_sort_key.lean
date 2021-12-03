@@ -12,7 +12,8 @@ variables {α : Type*} {κ : Type*}
 variable r: κ → κ → Prop
 variables x: α 
 variable xs: list α
-variable f: α → κ     
+variable f: α → κ 
+variable P: α → Prop    
 
 /- 
 # Insertion Sort w.r.t. Keys and Stability
@@ -112,3 +113,19 @@ begin
   cc,
 end 
 
+lemma filter_insort_key_neg [decidable_rel r] [is_linear_order κ r] [decidable_pred P]:
+  ¬ P x → (insort_key r x f xs).filter P = xs.filter P :=
+begin
+  induction xs,
+  { simp [insort_key],
+    intro h,
+    simp * },
+  simp [insort_key],
+  split_ifs,
+  { intro h1,
+    simp * },
+  intro h1,
+  simp [list.filter, xs_ih h1],
+end
+
+#check @filter_insort_key_neg
