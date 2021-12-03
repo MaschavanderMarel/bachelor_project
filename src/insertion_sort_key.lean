@@ -53,3 +53,8 @@ begin
   simp [mset_insort_key, isort_key, ih],
   refl,
 end
+
+lemma set_isort_key [decidable_rel r] : (isort_key r f xs).to_set = xs.to_set :=
+begin
+  simp [← set_mset_mset, mset_isort_key],
+end
