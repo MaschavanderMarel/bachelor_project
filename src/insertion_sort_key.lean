@@ -82,11 +82,18 @@ begin
     intros h1 h2,
     apply and.intro h,
     intros k h3,
-    have h4: r (f hd) k, from h1 k h3,
-    exact trans h h4 },
+    exact trans h (h1 k h3) },
   simp [sorted', ih],
   intros h1,
   simp [← set_mset_mset, ← multiset.coe_map, mset_insort_key, multiset.to_set],
   intros h2,
   exact or.resolve_left (total_of r (f x) (f hd)) h
+end
+
+lemma sorted_isort_key [decidable_rel r] [is_trans κ r] [is_total κ r] : 
+  sorted' r (map f (isort_key r f xs)) :=
+begin
+  induction' xs,
+  { simp [isort_key] },
+  simp [isort_key, sorted_insort_key, ih]
 end
