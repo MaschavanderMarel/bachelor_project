@@ -13,7 +13,7 @@ variable xs: list α
 /- 
 # Quicksort
 
-The qsort from the library is *not* really quicksort since it doesn't partition the elements in-place.calc
+The qsort from the library is *not* really quicksort since it doesn't partition the elements in-place.
 Therefore quicksort is defined below following the definition from Functional Algorithms Verified!.
  -/
 

@@ -102,7 +102,8 @@ end
 ## Stability
 -/
 
-lemma insort_is_Cons [decidable_rel r] [is_linear_order κ r]: (∀ a ∈ xs.to_set, r (f x) (f a)) → (insort_key r x f xs = (x:: xs)):=
+lemma insort_is_Cons [decidable_rel r] [is_linear_order κ r]: 
+  (∀ a ∈ xs.to_set, r (f x) (f a)) → (insort_key r x f xs = (x:: xs)):=
 begin
   cases xs,
   { simp [insort_key] },
@@ -110,3 +111,4 @@ begin
   intros h h1 h2,
   cc,
 end 
+
