@@ -1,11 +1,11 @@
 import data.list.sort
+import data.list.basic
 import data.multiset
 import data.set
 import tactic.induction
 import tactic.ring
 import algebra.order.field
 import tactic.linarith
-import algebra.group_power.order
 
 set_option trace.simplify.rewrite true
 
@@ -63,7 +63,7 @@ lemma sorted'_append [is_trans α r] [is_total α r] : sorted' r (xs ++ ys) ↔ 
 begin
   induction' xs fixing *,
   { simp [sorted']},
-  simp [sorted', ih, list.to_set, set_append],
+  simp [sorted', ih, set_append],
   apply iff.intro,
   { intro h,
     apply and.intro,

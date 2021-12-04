@@ -27,15 +27,6 @@ def isort_key [decidable_rel r] [is_linear_order κ r]: list α → list α
 | []       := []
 | (x :: xs) := insort_key r x f (isort_key xs)
 
-#check @insort_key
-#eval insort_key (λ m n: ℤ  , m <= n) 2 (λ x, x+1)  [1,3]
-#check @isort_key
-#eval isort_key (λ m n: ℤ, m <=n) (λ x, x*-1) [2,3,1]
-#check @list.map  
-#eval list.map (λ x, x+ 1) [1,2,3]
-#eval [1,2,3].map (λ x, x * 2)
-#check @sorted'
-
 /-
 ## Functional Correctness
  -/
