@@ -59,7 +59,8 @@ begin
   refl,
 end
 
-lemma sorted'_append [is_trans α r] [is_total α r] : sorted' r (xs ++ ys) ↔ sorted' r xs ∧ sorted' r ys ∧ (∀ (x ∈ xs), ∀ (y ∈ ys), r x y) :=
+lemma sorted'_append [is_trans α r] [is_total α r] : 
+  sorted' r (xs ++ ys) ↔ sorted' r xs ∧ sorted' r ys ∧ (∀ (x ∈ xs), ∀ (y ∈ ys), r x y) :=
 begin
   induction' xs fixing *,
   { simp [sorted']},
