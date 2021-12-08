@@ -69,8 +69,6 @@ begin
   simp,
 end
 
-#check mset_quicksort
-
 lemma set_quicksort [decidable_rel r]: (quicksort r xs).to_set = xs.to_set :=
 begin
   simp [← set_mset_mset, mset_quicksort],
@@ -115,6 +113,6 @@ end
 
 /- 
 ## Time Complexity
-Like in Functional Algorithms Verified the running time is not analyzed, 
+Like in __Functional Algorithms Verified!__ the running time is not analyzed, 
 because it is well known that it is quadratic in the worst case but sort of O(n lg n) on average. 
  -/

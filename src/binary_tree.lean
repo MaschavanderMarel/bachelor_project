@@ -79,7 +79,7 @@ begin
   induction' t with a l r,
   repeat { simp [size1, height, max_def] },
   split_ifs,
-  { have h3: 2 ^ height r <= 2 ^height l, by apply iff.elim_right (nat.pow_le_iff_le_right h2) h,
+  { have h3: 2 ^ height r <= 2 ^height l, from iff.elim_right (nat.pow_le_iff_le_right h2) h,
     calc
       size1 l + size1 r <= 2 ^ height l + size1 r : by simp *
       ... <= 2 ^ height l + 2 ^ height r  : by simp *
@@ -94,7 +94,26 @@ begin
     ... = 2 ^ (height r + 1) : by ring
 end
 
-#check @nat.pow_le_iff_le_right
+lemma min_height_size1: 2 ^ min_height t <= size1 t :=
+begin
+  have h2: 2 <= 2, by trivial,
+  induction' t with a l r,
+  repeat { simp [min_height, size1, min_def] },
+  split_ifs,
+  { have h3: 2 ^ min_height l <= 2 ^ min_height r, from iff.elim_right (nat.pow_le_iff_le_right h2) h,
+    calc
+      2 ^ (min_height l + 1) = 2 ^ min_height l + 2 ^ min_height l : by ring
+      ... <= 2 ^ min_height l + 2 ^ min_height r : by simp *
+      ... <= size1 l + 2 ^ min_height r: by simp *
+      ... <= size1 l + size1 r : by simp * },
+  have h1: min_height r <= min_height l, by linarith, 
+  have h3: 2 ^ min_height r <= 2 ^ min_height l, from iff.elim_right (nat.pow_le_iff_le_right h2) h1,
+    calc
+      2 ^ (min_height r + 1) = 2 ^ min_height r + 2 ^ min_height r : by ring
+      ... <= 2 ^ min_height l + 2 ^ min_height r : by simp *
+      ... <= 2 ^ min_height l + size1 r: by simp *
+      ... <= size1 l + size1 r : by simp *
+end
 
 /-
 ## Lemmas complete
