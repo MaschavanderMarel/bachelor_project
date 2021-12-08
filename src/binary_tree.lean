@@ -9,9 +9,13 @@ variable {α : Type}
 variable a: α 
 variable t: tree α 
 
-inductive btree (α : Type) : Type
-| empty {} : btree
-| node     : btree → α  → btree → btree
+-- inductive btree (α : Type) : Type
+-- | leaf {} : btree
+-- | node     : btree → α  → btree → btree
+
+/-
+## Definitions
+-/
 
 def height : tree α → ℕ
 | nil := 0
@@ -29,11 +33,36 @@ def size1: tree α → ℕ
 | nil := 1
 | (node a l r) := size1 l + size1 r
 
+def complete : tree α → Prop
+| nil := true
+| (node a l r ) := height l = height r ∧ complete l ∧ complete r
+
+/-
+## Lemmas size
+-/
+
 lemma size1_size: size1 t = size t + 1 :=
 begin
   induction' t,
   repeat { simp [size, size1, *]},
   cc
+end
+
+/-
+## Lemmas height
+-/
+
+lemma height_le_size_tree: height t <= size t :=
+begin
+  induction'  t,
+  repeat { simp [height, size] },
+  apply and.intro,
+  { calc
+      height t <= size t : by simp * 
+      ... ≤ size t + size t_1 :by simp},
+  calc
+    height t_1 <= size t_1: by simp * 
+    ... ≤ size t + size t_1 : by simp
 end
 
 lemma min_height_le_height : min_height t <= height t:=
@@ -42,14 +71,10 @@ begin
   repeat { simp [height, min_height, *]}
 end
 
-#reduce min_height (node a nil (node a nil nil))
-#reduce height nil
 
-def complete : tree α → Prop
-| nil := true
-| (node a l r ) := height l = height r ∧ complete l ∧ complete r
-
-#reduce complete (node a nil (node a nil nil))
+/-
+## Lemmas complete
+-/
 
 lemma complete_iff_height: complete t ↔ min_height t = height t :=
 begin
@@ -93,3 +118,4 @@ begin
   size t = size1 t - 1 : by simp [size1_size] 
   ... = 2 ^ height t - 1: by simp [*, size1_if_complete]
 end
+
