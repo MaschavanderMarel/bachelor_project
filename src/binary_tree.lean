@@ -86,7 +86,10 @@ begin
   ring,
 end
 
-lemma size_if_complete: complete t → size t = 2 ^ height t -1 :=
+lemma size_if_complete: complete t → size t = (2 ^ height t) - 1 :=
 begin
-  sorry
+ intro,
+ calc
+  size t = size1 t - 1 : by simp [size1_size] 
+  ... = 2 ^ height t - 1: by simp [*, size1_if_complete]
 end
