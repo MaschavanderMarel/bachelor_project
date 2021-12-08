@@ -21,6 +21,10 @@ def min_height: tree α → ℕ
 | nil := 0
 | (node a l r) := min (min_height l) (min_height r) + 1
 
+def size1: tree α → ℕ
+| nil := 1
+| (node a l r) := size1 l + size1 r
+
 lemma min_height_le_height : min_height t <= height t:=
 begin
   induction' t,
@@ -59,4 +63,14 @@ begin
   { cc},
   intro h2,
   repeat { linarith },
+end
+
+lemma size1_if_complete : complete t → size1 t = 2 ^height t :=
+begin
+  induction t with a l r l_ih r_ih,
+  { simp [complete, height, size1] },
+  simp [complete, height, size1 ],
+  intros,
+  simp *,
+  ring,
 end
