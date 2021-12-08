@@ -1,7 +1,9 @@
 import data.tree
 import utilities
+import data.nat.pow
 
 set_option trace.simplify.rewrite true
+set_option trace.simp_lemmas true
 
 open tree
 
@@ -54,7 +56,7 @@ end
 
 lemma height_le_size_tree: height t <= size t :=
 begin
-  induction'  t,
+  induction' t,
   repeat { simp [height, size] },
   apply and.intro,
   { calc
@@ -71,6 +73,28 @@ begin
   repeat { simp [height, min_height, *]}
 end
 
+lemma size1_height: size1 t <= 2 ^ height t :=
+begin
+  have h2: 2 <= 2, by trivial,
+  induction' t with a l r,
+  repeat { simp [size1, height, max_def] },
+  split_ifs,
+  { have h3: 2 ^ height r <= 2 ^height l, by apply iff.elim_right (nat.pow_le_iff_le_right h2) h,
+    calc
+      size1 l + size1 r <= 2 ^ height l + size1 r : by simp *
+      ... <= 2 ^ height l + 2 ^ height r  : by simp *
+      ... <= 2 ^ height l + 2 ^ height l  : by simp *
+      ... = 2 ^ (height l + 1) : by ring },
+  have h1: height l <= height r, by linarith, 
+  have h3: 2 ^ height l <= 2 ^height r, by apply iff.elim_right (nat.pow_le_iff_le_right h2) h1,
+  calc
+    size1 l + size1 r <= 2 ^ height l + size1 r: by simp *
+    ... <= 2 ^ height l + 2 ^ height r : by simp *
+    ... <= 2 ^ height r + 2 ^ height r : by simp *
+    ... = 2 ^ (height r + 1) : by ring
+end
+
+#check @nat.pow_le_iff_le_right
 
 /-
 ## Lemmas complete
