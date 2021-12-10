@@ -117,8 +117,10 @@ end
 
 /-
 ## Lemmas complete
--/
 
+
+Lemma 4.1 from __Functional Algorithms Verified!__
+-/
 lemma complete_iff_height: complete t ↔ min_height t = height t :=
 begin
   induction t with a l r l_ih r_ih,
@@ -144,6 +146,9 @@ begin
   repeat { linarith },
 end
 
+/-
+Lemma 4.2 from __Functional Algorithms Verified!__
+-/
 lemma size1_if_complete : complete t → size1 t = 2 ^height t :=
 begin
   induction t with a l r l_ih r_ih,
@@ -162,3 +167,59 @@ begin
   ... = 2 ^ height t - 1: by simp [*, size1_if_complete]
 end
 
+/-
+Lemma 4.3 from  __Functional Algorithms Verified!__
+-/
+lemma size1_height_if_incomplete: ¬ complete t → size1 t < 2 ^ height t :=
+begin
+  induction t with a l r l_ih r_ih,
+  repeat {simp [complete, size1, height, max_def]},
+  intros h1,
+  have h2: 2 <= 2, by trivial,
+  by_cases h3: height l = height r,
+  { simp * at h1,
+    cases (not_or_of_imp h1),
+    { simp [*, pow_ite] at * ,
+      calc
+        size1 l + size1 r < 2 ^ height l + size1 r : by simp *
+        ... <= 2 ^ height l + 2 ^ height r : by simp [size1_height] 
+        ... = 2 ^ (height r + 1) :by {simp *, ring} },
+    simp [*, pow_ite] at *,
+    calc
+      size1 l + size1 r < size1 l + 2 ^ height r : by simp *
+      ... <= 2 ^ height l + 2 ^ height r : by simp [size1_height] 
+      ... = 2 ^ (height r + 1) :by {simp *, ring} },
+  cases (ne.lt_or_lt h3),
+  { have h3: ¬ height r <= height l, by linarith,
+    have h4: 2 ^ height l < 2 ^ height r, from iff.elim_right (nat.pow_lt_iff_lt_right h2) h,
+    simp [*, pow_ite],
+    calc 
+      size1 l + size1 r <= size1 l + 2 ^ height r: by simp [size1_height]
+      ... <= 2 ^ height l + 2 ^ height r : by simp [size1_height]
+      ... < 2 ^ height r + 2 ^ height r : by simp *
+      ... = 2 ^ (height r + 1) : by ring},
+  have h3: height r <= height l, by linarith,
+  have h4: 2 ^ height r < 2 ^ height l, from iff.elim_right (nat.pow_lt_iff_lt_right h2) h,
+  simp [*, pow_ite],
+  calc 
+      size1 l + size1 r <= size1 l + 2 ^ height r: by simp [size1_height]
+      ... <= 2 ^ height l + 2 ^ height r : by simp [size1_height]
+      ... < 2 ^ height l + 2 ^ height l : by simp *
+      ... = 2 ^ (height l + 1) : by ring,
+end
+
+/-
+Lemmma 4.4 from __Functional Algorithms Verified!__ 
+-/
+lemma min_height_size1_if_incomplete: ¬ complete t → 2 ^ min_height t < size1 t :=
+begin
+  induction t with a l r l_ih r_ih,
+  repeat { simp [complete, min_height, size1, min_def]},
+  intro h,
+  by_cases h1: height l = height r,
+  { sorry},
+  have h2: height l < height r ∨ height r < height l, from sorry,
+  cases h2,
+  { sorry},
+  sorry,
+end
