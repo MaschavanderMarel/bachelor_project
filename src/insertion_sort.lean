@@ -16,7 +16,7 @@ variable xs: list α
 /- 
 # Insertion sort
 
-The two functions insort and isort from Functional Algorithms Verified are already defined in Lean 
+The two functions insort and isort from __Functional Algorithms Verified!__ are already defined in Lean 
 as ordered_insert and insertion_sort respectively.
 
 ## Functional Correctness
@@ -47,7 +47,7 @@ end
 
 lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : sorted' r (ordered_insert r x xs) = sorted' r xs :=
 begin
-  induction' xs fixing *, -- by using fixing the trans and total_of functions work without mentioning the instances explicitly
+  induction' xs fixing *, -- By using fixing the trans and total_of functions work without mentioning the instances explicitly.
   { simp [sorted'],
     intros,
     exact false.elim H },
@@ -74,7 +74,7 @@ end
 
 /- 
 ## Time Complexity
-We count the number of function calls
+We count the number of function calls.
  -/
 
 def T_insort [decidable_rel r] : α → list α → nat 

@@ -14,7 +14,7 @@ variable xs: list α
 # Quicksort
 
 The qsort from the library is *not* really quicksort since it doesn't partition the elements in-place.
-Therefore quicksort is defined below following the definition from Functional Algorithms Verified!.
+Therefore quicksort is defined below following the definition from __Functional Algorithms Verified!__.
  -/
 
 lemma well_founded_qs [decidable_rel r]:  (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof :=

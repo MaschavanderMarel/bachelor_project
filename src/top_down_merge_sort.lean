@@ -16,7 +16,7 @@ variable xs: list α
 /- 
 # Top-Down Merge Sort
 
-The function merge from Functional Algorithms Verified! is already defined in Lean as merge. 
+The function merge from __Functional Algorithms Verified!__ is already defined in Lean as merge. 
 The function msort is defined as merge_sort but in a different way. 
 Therefore, it is defined below in the same way making use of the length of the list and drop/take functions, 
 so the proof structure of the book can be followed. 
@@ -217,7 +217,7 @@ using_well_founded {
 
 /-
 ## Time Complexity
-We only count the number of comparisons between list elements
+We only count the number of comparisons between list elements.
 -/
 
 def C_merge [decidable_rel r] : list α → list α → nat

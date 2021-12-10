@@ -15,7 +15,7 @@ variables xs ys: list α
 variable x: α 
 
 /-
-This files contains some functions that are predefined in Function Algorithms Verified, 
+This files contains some functions that are predefined in __Function Algorithms Verified!__, 
 but not in Lean
 -/
 
@@ -34,7 +34,7 @@ begin
 end
 
 /-
-This definition follows the definition in Functional Algorithms Verified 
+This definition follows the definition in __Functional Algorithms Verified!__ 
 instead of using the predefined function sorted in Lean.
 -/
 def sorted' [is_total α r] [is_trans α r] : list α → Prop 
