@@ -174,7 +174,7 @@ lemma size1_height_if_incomplete: ¬ complete t → size1 t < 2 ^ height t :=
 begin
   induction t with a l r l_ih r_ih,
   repeat {simp [complete, size1, height, max_def]},
-  intros h1,
+  intro h1,
   have h2: 2 <= 2, by trivial,
   by_cases h3: height l = height r,
   { simp * at h1,
@@ -214,12 +214,43 @@ Lemmma 4.4 from __Functional Algorithms Verified!__
 lemma min_height_size1_if_incomplete: ¬ complete t → 2 ^ min_height t < size1 t :=
 begin
   induction t with a l r l_ih r_ih,
-  repeat { simp [complete, min_height, size1, min_def]},
-  intro h,
-  by_cases h1: height l = height r,
-  { sorry},
-  have h2: height l < height r ∨ height r < height l, from sorry,
-  cases h2,
-  { sorry},
-  sorry,
+  repeat { simp [complete, size1, min_height, min_def]},
+  intro h1,
+  have h2: 2 <= 2, by trivial,
+  by_cases h3: min_height l = min_height r,
+  { simp *,
+    by_cases complete l ∧ complete r,
+    { have h4: min_height l = height l, from iff.elim_left (complete_iff_height l) h.left,
+      have h5: min_height r = height r, from iff.elim_left (complete_iff_height r) h.right,
+      have h6: height l = height r, by cc,
+      simp * at *, },
+    rw [not_and_distrib] at h,
+    cases h,
+    { calc
+        2 ^ (min_height r + 1) = 2 ^ min_height r + 2 ^ min_height r : by ring
+        ... = 2 ^ min_height l + 2 ^ min_height r: by simp *
+        ... <= 2 ^ min_height l + size1 r: by simp [min_height_size1]
+        ... < size1 l + size1 r : by simp [l_ih h] }, 
+    calc
+      2 ^ (min_height r + 1) = 2 ^ min_height r + 2 ^ min_height r : by ring
+      ... = 2 ^ min_height l + 2 ^ min_height r: by simp *
+      ... <= size1 l + 2 ^ min_height r: by simp [min_height_size1]
+      ... < size1 l + size1 r : by simp [r_ih h]},
+  cases (ne.lt_or_lt h3),
+  { have h4: min_height l <= min_height r, by linarith,
+    simp [*, pow_ite],
+    calc 
+      2 ^ (min_height l + 1) = 2 ^ min_height l + 2 ^ min_height l : by ring
+      ... < 2 ^ min_height l + 2 ^ min_height r : by simp [iff.elim_right (nat.pow_lt_iff_lt_right h2) h]
+      ... <= 2 ^ min_height l + size1 r: by simp [min_height_size1 l, min_height_size1 r]
+      ... <= size1 l + size1 r: by simp [min_height_size1]},
+  have h4: ¬ min_height l <= min_height r, by linarith,
+  simp [*, pow_ite],
+  calc 
+    2 ^ (min_height r + 1) = 2 ^ min_height r + 2 ^ min_height r : by ring
+    ... < 2 ^ min_height l + 2 ^ min_height r : by simp [iff.elim_right (nat.pow_lt_iff_lt_right h2) h]
+    ... <= 2 ^ min_height l + size1 r: by simp [min_height_size1 l, min_height_size1 r]
+    ... <= size1 l + size1 r: by simp [min_height_size1]
 end
+
+
