@@ -266,3 +266,10 @@ begin
   intro h1,
   simp *,
 end
+
+lemma complete_iff_size1: complete t ↔ size1 t = 2 ^ height t :=
+begin
+  apply iff.intro,
+  { exact size1_if_complete t },
+  exact complete_if_size1_height t
+end
