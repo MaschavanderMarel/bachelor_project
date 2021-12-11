@@ -145,6 +145,9 @@ begin
   simp [list.filter, *],
 end
 
+/-
+Lemma 2.9 from __Functional Algorithms Verified!__
+-/
 lemma sort_key_stable [decidable_rel r] [is_linear_order κ r] [decidable_pred (λ y, f y = k)]: 
   (isort_key r f xs).filter (λ y, f y = k) = xs.filter (λ y, f y = k):=
 begin

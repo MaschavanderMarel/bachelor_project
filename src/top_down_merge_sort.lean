@@ -77,6 +77,9 @@ begin
   refl
 end
 
+/-
+Lemma 2.2 from __Functional Algorithms Verified!__
+-/
 lemma mset_msort [decidable_rel r]: 
   ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
 | xs := begin
@@ -171,6 +174,9 @@ begin
   contradiction,
 end
 
+/-
+Lemma 2.3 from __Functional Algorithms Verified!__
+-/
 lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
   ∀ xs: list α, sorted' r (msort r xs)
 | xs := begin
@@ -332,9 +338,9 @@ begin
   simp *,
 end
 
-example (a b : ℕ ) (h: b <= a) : min a b = b :=
-by simp [*]
-
+/-
+Lemma 2.4 from __Functional Algorithms Verified!__
+-/
 lemma C_msort_le [decidable_rel r] (k: ℕ ) : xs.length = 2^k → C_msort r xs <= k * 2^k :=
 begin
   let ys := take (xs.length /2) xs,

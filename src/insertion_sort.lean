@@ -112,6 +112,9 @@ begin
   { simp [length_insort, ih] }
 end
 
+/-
+Lemma 2.1 from __Functional Algorithms Verified!__
+-/
 lemma T_isort_length [decidable_rel r]: T_isort r xs <= (xs.length + 1) ^ 2 :=
 begin
   induction' xs fixing *,
