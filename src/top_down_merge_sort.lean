@@ -16,7 +16,7 @@ variable xs: list α
 /- 
 # Top-Down Merge Sort
 
-The function merge from __Functional Algorithms Verified!__ is already defined in Lean as merge. 
+The function merge from __Functional Algorithms, Verified!__ is already defined in Lean as merge. 
 The function msort is defined as merge_sort but in a different way. 
 Therefore, it is defined below in the same way making use of the length of the list and drop/take functions, 
 so the proof structure of the book can be followed. 
@@ -78,7 +78,7 @@ begin
 end
 
 /-
-Lemma 2.2 from __Functional Algorithms Verified!__
+Lemma 2.2 from __Functional Algorithms, Verified!__
 -/
 lemma mset_msort [decidable_rel r]: 
   ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
@@ -175,7 +175,7 @@ begin
 end
 
 /-
-Lemma 2.3 from __Functional Algorithms Verified!__
+Lemma 2.3 from __Functional Algorithms, Verified!__
 -/
 lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
   ∀ xs: list α, sorted' r (msort r xs)
@@ -339,7 +339,7 @@ begin
 end
 
 /-
-Lemma 2.4 from __Functional Algorithms Verified!__
+Lemma 2.4 from __Functional Algorithms, Verified!__
 -/
 lemma C_msort_le [decidable_rel r] (k: ℕ ) : xs.length = 2^k → C_msort r xs <= k * 2^k :=
 begin

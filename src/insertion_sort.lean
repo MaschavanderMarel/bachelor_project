@@ -16,7 +16,7 @@ variable xs: list α
 /- 
 # Insertion sort
 
-The two functions insort and isort from __Functional Algorithms Verified!__ are already defined in Lean 
+The two functions insort and isort from __Functional Algorithms, Verified!__ are already defined in Lean 
 as ordered_insert and insertion_sort respectively.
 
 ## Functional Correctness
@@ -113,7 +113,7 @@ begin
 end
 
 /-
-Lemma 2.1 from __Functional Algorithms Verified!__
+Lemma 2.1 from __Functional Algorithms, Verified!__
 -/
 lemma T_isort_length [decidable_rel r]: T_isort r xs <= (xs.length + 1) ^ 2 :=
 begin

@@ -21,7 +21,7 @@ def complete : tree α → Prop
 /-
 ## Lemmas
 
-Lemma 4.1 from __Functional Algorithms Verified!__
+Lemma 4.1 from __Functional Algorithms, Verified!__
 -/
 lemma complete_iff_height: complete t ↔ min_height t = height t :=
 begin
@@ -49,7 +49,7 @@ begin
 end
 
 /-
-Lemma 4.2 from __Functional Algorithms Verified!__
+Lemma 4.2 from __Functional Algorithms, Verified!__
 -/
 lemma size1_if_complete : complete t → size1 t = 2 ^height t :=
 begin
@@ -70,7 +70,7 @@ begin
 end
 
 /-
-Lemma 4.3 from  __Functional Algorithms Verified!__
+Lemma 4.3 from  __Functional Algorithms, Verified!__
 -/
 lemma size1_height_if_incomplete: ¬ complete t → size1 t < 2 ^ height t :=
 begin
@@ -111,7 +111,7 @@ begin
 end
 
 /-
-Lemmma 4.4 from __Functional Algorithms Verified!__ 
+Lemmma 4.4 from __Functional Algorithms, Verified!__ 
 -/
 lemma min_height_size1_if_incomplete: ¬ complete t → 2 ^ min_height t < size1 t :=
 begin
@@ -170,7 +170,7 @@ begin
 end
 
 /-
-Corollary 4.5 from __Functional Algorithms Verified!__ 
+Corollary 4.5 from __Functional Algorithms, Verified!__ 
 -/
 lemma complete_iff_size1: complete t ↔ size1 t = 2 ^ height t :=
 begin
