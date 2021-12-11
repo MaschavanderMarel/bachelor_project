@@ -260,3 +260,9 @@ begin
   simp *,
 end
 
+lemma complete_if_size1_min_height: size1 t = 2 ^ min_height t → complete t :=
+begin
+  have h: ¬ 2 ^ min_height t < size1 t → complete t, from not.imp_symm (min_height_size1_if_incomplete t),
+  intro h1,
+  simp *,
+end
