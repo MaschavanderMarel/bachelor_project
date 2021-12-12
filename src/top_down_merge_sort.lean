@@ -182,7 +182,7 @@ lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
 | xs := begin
   let ys := take (xs.length /2) xs,
   let zs := drop (xs.length / 2) xs,
-  rw msort,
+  rw msort, -- Don't use simp here, because it will keep looping.
   split_ifs,
   { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
       apply and.intro,
@@ -197,7 +197,7 @@ lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
         ... <= xs.length : nat.div_le_self' xs.length 2,
       exact nat.sub_lt h1 h, 
     end,
-    cases h1,
+    cases h1, -- This is needed to have h1_left and h1_right seen by Lean.
     simp [sorted_merge],
     simp only [sorted_msort ys],
     simp [sorted_msort zs] }, 
