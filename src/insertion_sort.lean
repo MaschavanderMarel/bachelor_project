@@ -130,4 +130,3 @@ begin
     ... = (xs.length + 1 + 1) ^ 2 : by ring,
     }
 end
-

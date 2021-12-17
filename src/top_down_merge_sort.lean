@@ -379,4 +379,3 @@ begin
     ... = k.succ * 2^k.succ : by simp, },
   simp,
 end
-
