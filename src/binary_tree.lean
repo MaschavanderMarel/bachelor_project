@@ -43,10 +43,9 @@ def subtrees: tree α → set (tree α)
 | nil := {tree.nil}
 | (node a l r) := { (node a l r)} ∪ subtrees l ∪ subtrees r
 
-#check subtrees (node 1 (node 2 nil nil) nil)
-
 /-
 ## Lemmas Size
+Except for the first lemma, these lemmas are only in the Isabelle file
 -/
 
 lemma size1_size: size1 t = size t + 1 :=
@@ -56,14 +55,12 @@ begin
   cc
 end
 
-/- Only in Isabelle file -/
 @[simp]
 lemma size1_ge0: 0 < size1 t :=
 begin
   simp [size1_size],
 end
 
-/- Only in Isabelle file -/
 @[simp]
 lemma eq_size_0 : size t = 0 ↔ t = nil :=
 begin
@@ -71,7 +68,6 @@ begin
   repeat { simp [size] },
 end
 
-/- Only in Isabelle file -/
 @[simp]
 lemma eq_0_size: 0 = size t ↔ t = nil :=
 begin
@@ -81,7 +77,6 @@ begin
   simp,
 end
 
-/- Only in Isabelle file -/
 lemma neq_nil_iff: t ≠ nil ↔ ∃ a l r, t = (node a l r) :=
 begin
   cases t with a l r,
@@ -90,9 +85,9 @@ end
 
 /-
 ## Lemmas Height
+Some of these lemmas are only in the Isabelle file
 -/
 
-/- Only in Isabelle file -/
 @[simp]
 lemma eq_height_0 : height t = 0 ↔ t = nil :=
 begin
@@ -100,7 +95,6 @@ begin
   repeat { simp [height],},
 end
 
-/- Only in Isabelle file -/
 @[simp]
 lemma eq_0_height : 0 = height t ↔ t = nil :=
 begin
@@ -110,7 +104,6 @@ begin
   simp,
 end
 
-/- Only in Isabelle file -/
 @[simp]
 lemma height_le_size_tree: height t <= size t :=
 begin
@@ -152,7 +145,6 @@ begin
     ... = 2 ^ (height r + 1) : by ring
 end
 
-/- Only in Isabelle file -/
 lemma size_height: size t <= 2 ^ height t - 1 :=
 begin
   have h: size1 t <= 2 ^ height t, from size1_height t,
@@ -253,8 +245,55 @@ begin
   ... ≤ size l + size r + 1: by linarith,
 end
 
-#reduce ({1}: set ℕ)
-#reduce ({nil}: set (tree α )).nonempty
-#check ({nil}: set (tree α )).nonempty
+lemma set_treeE: a ∈ set_tree t → ∃ l r, (node a l r) ∈ subtrees t :=
+begin
+  induction' t fixing * with x l r,
+  repeat {simp [set_tree],},
+  intro h,
+  cases h,
+  { cases h,
+    { apply exists.intro l,
+      apply exists.intro r,
+      rw h,
+      simp [subtrees],},
+    have ih_l' : ∃ (l_1 r : tree α), node a l_1 r ∈ subtrees l, from ih_l h,
+    apply exists.elim ih_l',
+    intros a_1 h1,
+    apply exists.elim h1,
+    intros a_2 h2,
+    apply exists.intro a_1,
+    apply exists.intro a_2,
+    simp [subtrees],
+    cc, },
+  have ih_r': ∃ (l r_1 : tree α), node a l r_1 ∈ subtrees r, from ih_r h,
+  apply exists.elim ih_r',
+  intros a_1 h1,
+  apply exists.elim h1,
+  intros a_2 h2,
+  apply exists.intro a_1,
+  apply exists.intro a_2,
+  simp [subtrees],
+  cc,
+end
 
-#check node 1 nil nil
+@[simp]
+lemma node_notin_subtrees_if : a ∉ set_tree t → node a l r ∉ subtrees t :=
+begin
+  induction' t fixing *,
+  { simp [set_tree, subtrees] },
+  simp [set_tree],
+  intro h,
+  rw not_or_distrib at h,
+  cases h,
+  rw not_or_distrib at h_left,
+  have: node a l r ∉ subtrees t_1, from ih_t_1 h_right,
+  have: node a l r ∉ subtrees t, from ih_t h_left.right,
+  simp [subtrees],
+  cc,
+end
+
+lemma in_set_tree_if: node a l r ∈ subtrees t → a ∈ set_tree t :=
+begin
+  contrapose,
+  exact node_notin_subtrees_if a t l r
+end
