@@ -35,6 +35,10 @@ def size1: tree α → ℕ
 | nil := 1
 | (node a l r) := size1 l + size1 r
 
+def set_tree: tree α → set α 
+| nil := {}
+| (node a l r) := set_tree l ∪ {a} ∪ set_tree r
+
 def subtrees: tree α → set (tree α)
 | nil := {tree.nil}
 | (node a l r) := { (node a l r)} ∪ subtrees l ∪ subtrees r
@@ -178,6 +182,37 @@ begin
       ... <= 2 ^ min_height l + 2 ^ min_height r : by simp *
       ... <= 2 ^ min_height l + size1 r: by simp *
       ... <= size1 l + size1 r : by simp *
+end
+
+/-
+## Lemmas set_tree
+These lemmas are only in the Isabelle file.
+-/
+
+@[simp]
+lemma eq_set_tree_empty : set_tree t = {} ↔ t = nil :=
+begin
+  cases t with a l r,
+  repeat { simp [set_tree, set.nonempty.ne_empty]},
+end
+
+@[simp]
+lemma eq_empty_set_tree: {} = set_tree t ↔ t = nil :=
+begin
+  cases t with a l r,
+  repeat { simp [ set_tree]},
+  apply ne.symm,
+  simp [set.nonempty.ne_empty],
+end
+
+@[simp]
+lemma finite_set_tree : (set_tree t).finite :=
+begin
+  induction' t with a l r,
+  repeat { simp [set_tree] },
+  apply set.finite.union,
+  { simp *,},
+  assumption
 end
 
 /-
