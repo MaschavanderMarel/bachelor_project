@@ -8,7 +8,7 @@ open tree
 
 variable {α : Type}
 variable a: α 
-variables t l r: tree α 
+variables t l r s: tree α 
 
 /-
 ## Definitions
@@ -35,8 +35,14 @@ def size1: tree α → ℕ
 | nil := 1
 | (node a l r) := size1 l + size1 r
 
+def subtrees: tree α → set (tree α)
+| nil := {tree.nil}
+| (node a l r) := { (node a l r)} ∪ subtrees l ∪ subtrees r
+
+#check subtrees (node 1 (node 2 nil nil) nil)
+
 /-
-## Lemmas size
+## Lemmas Size
 -/
 
 lemma size1_size: size1 t = size t + 1 :=
@@ -74,13 +80,12 @@ end
 /- Only in Isabelle file -/
 lemma neq_nil_iff: t ≠ nil ↔ ∃ a l r, t = (node a l r) :=
 begin
-  sorry
+  cases t with a l r,
+  repeat { simp },
 end  
 
-#eval size1 (node 1 nil nil)
-
 /-
-## Lemmas height
+## Lemmas Height
 -/
 
 /- Only in Isabelle file -/
@@ -175,3 +180,46 @@ begin
       ... <= size1 l + size1 r : by simp *
 end
 
+/-
+## Lemmas Subtrees
+These lemmas are only in the Isabelle file.
+-/
+
+@[simp]
+lemma neq_subtrees_empty : subtrees t ≠ {} :=
+begin
+  cases t with a l r,
+  repeat { simp [subtrees, set.nonempty.ne_empty] },
+end
+
+@[simp]
+lemma neg_empty_subtrees : {} ≠ subtrees t :=
+begin
+  apply ne.symm,
+  cases t,
+  repeat { simp [subtrees, set.nonempty.ne_empty] },
+end
+
+lemma size_subtrees: s ∈ subtrees t → size s <= size t :=
+begin
+  induction' t with a l r,
+  repeat { simp [subtrees, size] },
+  intro h,
+  cases h,
+  { cases h,
+    { calc
+        size s = size l + size r + 1 : by simp [*, size]
+        ... ≤ size l + size r + 1: by ring},
+    calc 
+      size s <= size l: by simp *
+      ... ≤ size l + size r + 1: by linarith,},
+  calc 
+  size s <= size r: by simp *
+  ... ≤ size l + size r + 1: by linarith,
+end
+
+#reduce ({1}: set ℕ)
+#reduce ({nil}: set (tree α )).nonempty
+#check ({nil}: set (tree α )).nonempty
+
+#check node 1 nil nil

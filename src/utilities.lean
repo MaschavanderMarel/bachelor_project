@@ -16,7 +16,7 @@ variable x: α
 
 /-
 This files contains some functions that are predefined in __Function Algorithms, Verified!__, 
-but not in Lean
+but not in Lean.
 -/
 
 def list.to_set : list α → set α --Source: chapter 10.6 Theorem Proving in Lean.
@@ -35,7 +35,8 @@ end
 
 /-
 This definition follows the definition in __Functional Algorithms, Verified!__ 
-instead of using the predefined function sorted in Lean.
+instead of using the predefined function sorted in Lean 
+in order to follow the structure of the proofs.
 -/
 def sorted' [is_total α r] [is_trans α r] : list α → Prop 
 | [] := true
