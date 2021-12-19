@@ -3,7 +3,6 @@ import utilities
 import data.nat.pow
 
 set_option trace.simplify.rewrite true
-set_option trace.simp_lemmas true
 
 open tree
 
@@ -47,6 +46,32 @@ end
 ## Lemmas height
 -/
 
+/-
+Only in Isabelle file
+-/
+@[simp]
+lemma eq_height_0 : height t = 0 ↔ t = nil :=
+begin
+  cases t,
+  repeat { simp [height],},
+end
+
+/-
+Only in Isabelle file
+-/
+@[simp]
+lemma eq_0_height : 0 = height t ↔ t = nil :=
+begin
+  cases t with a l r,
+  repeat { simp [height, nat.add_one]},
+  have: 0 < (max (height l) (height r)).succ, from nat.succ_pos (max (height l) (height r)),
+  linarith
+end
+
+/-
+Only in Isabelle file
+-/
+@[simp]
 lemma height_le_size_tree: height t <= size t :=
 begin
   induction' t,
@@ -87,6 +112,21 @@ begin
     ... = 2 ^ (height r + 1) : by ring
 end
 
+/-
+Only in Isabelle file
+-/
+lemma size_height: size t <= 2 ^ height t - 1 :=
+begin
+  have h: size1 t <= 2 ^ height t, from size1_height t,
+  have h1: size1 t = size t + 1, from size1_size t,
+  rw h1 at h,
+  have h2: 1 <= 2 ^ height t, from nat.one_le_two_pow (height t),
+  have h3:size t + 1 ≤ 2 ^ height t ↔ size t ≤ 2 ^ height t - 1, from nat.add_le_to_le_sub (size t) h2,
+  exact iff.elim_left h3 h,
+end
+
+#check @tsub_le_iff_right
+
 lemma min_height_size1: 2 ^ min_height t <= size1 t :=
 begin
   have h2: 2 <= 2, by trivial,
@@ -107,3 +147,4 @@ begin
       ... <= 2 ^ min_height l + size1 r: by simp *
       ... <= size1 l + size1 r : by simp *
 end
+
