@@ -6,9 +6,11 @@ set_option trace.simplify.rewrite true
 
 open tree
 
-variable {α : Type}
+variable { α : Type}
+variable { β : Type}
 variable a: α 
 variables t l r s: tree α 
+variable f: α → β 
 
 /-
 ## Basic Functions
@@ -318,4 +320,86 @@ lemma in_set_tree_if: node a l r ∈ subtrees t → a ∈ set_tree t :=
 begin
   contrapose,
   exact node_notin_subtrees_if a t l r
+end
+
+/-
+## Lemmas List of Entries
+These lemmas are only in the Isabelle file.
+-/
+
+@[simp]
+lemma eq_inorder_nil: inorder t = [] ↔ t = nil :=
+begin
+  cases t,
+  repeat { simp [inorder] },
+end
+
+@[simp]
+lemma eq_nil_inorder: [] = inorder t ↔ t = nil :=
+begin
+  cases t,
+  repeat { simp [inorder] },
+end
+
+@[simp]
+lemma set_inorder : (inorder t).to_set = set_tree t :=
+begin
+  induction' t,
+  repeat { simp only [inorder, list.to_set, set_tree] },
+  simp only [set_append, list.to_set, *, set.union_empty],
+end
+
+@[simp]
+lemma set_preorder : (preorder' t).to_set = set_tree t :=
+begin
+  induction' t,
+  repeat { simp only [preorder', list.to_set, set_tree] },
+  simp only [set_append, list.to_set, *, set.union_comm, set.union_empty],
+end
+
+@[simp]
+lemma set_postorder : (postorder t).to_set = set_tree t :=
+begin
+  induction' t,
+  repeat { simp  [postorder, list.to_set, set_tree] },
+  simp [set_append, list.to_set, *, set.union_empty, set.insert_union],
+end
+
+@[simp]
+lemma length_preorder: (preorder' t).length = size t :=
+begin
+  induction' t,
+  repeat { simp [size, preorder', *] },
+end
+
+@[simp]
+lemma length_inorder: (inorder t).length = size t :=
+begin
+  induction' t,
+  repeat { simp [size, inorder, *, add_assoc] },
+end
+
+@[simp]
+lemma length_postorder: (postorder t).length = size t :=
+begin
+  induction' t,
+  repeat { simp [size, postorder, *, add_assoc] },
+end
+
+lemma preorder_map: preorder' (map f t) = list.map f (preorder' t) :=
+begin
+  induction' t,
+  repeat { simp [map, preorder', *] },
+end
+
+lemma inorder_map: inorder (map f t) = list.map f (inorder t) :=
+begin
+  induction' t,
+  repeat { simp [map, inorder, *] },
+end
+
+lemma postorder_map: postorder (map f t) = list.map f (postorder t) :=
+begin
+  induction' t,
+  repeat { simp [map, postorder, *] },
 end
