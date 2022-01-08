@@ -11,7 +11,7 @@ variable a: α
 variables t l r s: tree α 
 
 /-
-## Definitions
+## Basic Functions
 
 A binary tree is already defined in Lean as tree. 
 The difference with __Functional Algorithms, Verified!__ is that a leaf is called nil, 
@@ -19,13 +19,28 @@ and the order of the node is (value, tree, tree) instead of (tree, value, tree).
 Since this does not change the structure of the proofs, the Lean definition is reused.
 -/
 
-def height : tree α → ℕ
-| nil := 0
-| (node a l r) := max (height l) (height r) + 1
+def set_tree: tree α → set α 
+| nil := {}
+| (node a l r) := set_tree l ∪ {a} ∪ set_tree r
 
-def min_height: tree α → ℕ 
-| nil := 0
-| (node a l r) := min (min_height l) (min_height r) + 1
+/-
+map_tree is already defined in Lean as map and is reused.
+-/
+
+def inorder: tree α → list α 
+| nil := []
+| (node a l r) := inorder l ++ [a] ++ inorder r
+
+/-
+The name preorder is already used in lean, therefore the name preorder' is used.
+-/
+def preorder': tree α → list α 
+| nil := []
+| (node a l r) := [a] ++ preorder' l ++ preorder' r
+
+def postorder: tree α → list α 
+| nil := []
+| (node a l r) := postorder l ++ postorder r ++ [a]
 
 def size: tree α → ℕ
 | nil := 0
@@ -35,9 +50,13 @@ def size1: tree α → ℕ
 | nil := 1
 | (node a l r) := size1 l + size1 r
 
-def set_tree: tree α → set α 
-| nil := {}
-| (node a l r) := set_tree l ∪ {a} ∪ set_tree r
+def height : tree α → ℕ
+| nil := 0
+| (node a l r) := max (height l) (height r) + 1
+
+def min_height: tree α → ℕ 
+| nil := 0
+| (node a l r) := min (min_height l) (min_height r) + 1
 
 def subtrees: tree α → set (tree α)
 | nil := {tree.nil}
@@ -77,6 +96,9 @@ begin
   simp,
 end
 
+/-
+This lemma is called __neq_Leaf_iff__ in the Isabelle file.
+-/
 lemma neq_nil_iff: t ≠ nil ↔ ∃ a l r, t = (node a l r) :=
 begin
   cases t with a l r,
@@ -85,7 +107,7 @@ end
 
 /-
 ## Lemmas Height
-Some of these lemmas are only in the Isabelle file
+Some of these lemmas are only in the Isabelle file.
 -/
 
 @[simp]
