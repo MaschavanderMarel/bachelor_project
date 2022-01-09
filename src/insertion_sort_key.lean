@@ -86,8 +86,7 @@ lemma sorted_isort_key [decidable_rel r] [is_linear_order κ r] :
   sorted' r (map f (isort_key r f xs)) :=
 begin
   induction' xs,
-  { simp [isort_key] },
-  simp [isort_key, sorted_insort_key, ih]
+  repeat { simp [isort_key, sorted_insort_key, *] },
 end
 
 /-
@@ -98,8 +97,7 @@ lemma insort_is_Cons [decidable_rel r] [is_linear_order κ r]:
   (∀ a ∈ xs.to_set, r (f x) (f a)) → insort_key r x f xs = (x:: xs):=
 begin
   cases xs,
-  { simp [insort_key] },
-  simp [list.to_set, insort_key],
+  repeat { simp [insort_key, list.to_set] },
   intros h h1 h2,
   cc,
 end 
@@ -108,9 +106,8 @@ lemma filter_insort_key_neg [decidable_rel r] [is_linear_order κ r] [decidable_
   ¬ P x → (insort_key r x f xs).filter P = xs.filter P :=
 begin
   induction xs,
-  { simp [insort_key],
-    intro h,
-    simp * },
+  { intro h,
+    simp [insort_key, *] },
   simp [insort_key],
   split_ifs,
   { intro h1,
@@ -118,8 +115,6 @@ begin
   intro h1,
   simp [list.filter, xs_ih h1],
 end
-
-#check @filter_insort_key_neg
 
 lemma filter_insort_key_pos [decidable_rel r] [is_linear_order κ r] [decidable_pred P]:
   sorted' r (xs.map f) ∧ P x → (insort_key r x f xs).filter P = insort_key r x f (xs.filter P) :=
@@ -152,8 +147,7 @@ lemma sort_key_stable [decidable_rel r] [is_linear_order κ r] [decidable_pred (
   (isort_key r f xs).filter (λ y, f y = k) = xs.filter (λ y, f y = k):=
 begin
   induction xs,
-  { simp [isort_key] },
-  simp [list.filter],
+  repeat { simp [isort_key, list.filter] },
   split_ifs,
   { simp [isort_key, *, filter_insort_key_pos, sorted_isort_key, ← member_list_set],
     have h1: (∀ a ∈ (list.filter (λ (y : α), f y = k) xs_tl).to_set, r (f _) (f a)) → insort_key r _ f _ = (_:: _) , from insort_is_Cons r xs_hd (filter (λ (y : α), f y = k) xs_tl) f,

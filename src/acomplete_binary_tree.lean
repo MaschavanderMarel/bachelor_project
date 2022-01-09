@@ -1,6 +1,5 @@
 import complete_binary_tree
 import data.nat.log
-import analysis.special_functions.log
 
 set_option trace.simplify.rewrite true
 set_option trace.simp_lemmas true

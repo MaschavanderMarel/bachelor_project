@@ -15,11 +15,11 @@ variables xs ys: list α
 variable x: α 
 
 /-
-This files contains some functions that are predefined in __Function Algorithms, Verified!__, 
+This files contains some functions and lemmas that are predefined in __Function Algorithms, Verified!__ and the Isabelle code, 
 but not in Lean.
 -/
 
-def list.to_set : list α → set α --Source: chapter 10.6 Theorem Proving in Lean.
+def list.to_set : list α → set α -- Source: chapter 10.6 Theorem Proving in Lean.
 | []     := ∅
 | (h::t) := {h} ∪ list.to_set t
 
@@ -29,8 +29,7 @@ def multiset.to_set: multiset α → set α :=
 lemma member_list_set : x ∈ xs ↔ x ∈ xs.to_set :=
 begin
   induction' xs,
-  { simp [list.to_set], },
-  simp [list.to_set, ih],
+  repeat { simp [list.to_set, *], },
 end
 
 /-

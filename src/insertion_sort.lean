@@ -16,8 +16,8 @@ variable xs: list α
 /- 
 # Insertion sort
 
-The two functions insort and isort from __Functional Algorithms, Verified!__ are already defined in Lean 
-as ordered_insert and insertion_sort respectively.
+The two functions insort and isort from __Functional Algorithms, Verified!__ are defined in Lean 
+as ordered_insert and insertion_sort respectively and are reused.
 
 ## Functional Correctness
  -/
@@ -47,7 +47,8 @@ end
 
 lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : sorted' r (ordered_insert r x xs) = sorted' r xs :=
 begin
-  induction' xs fixing *, -- By using fixing the trans and total_of functions work without mentioning the instances explicitly.
+  -- By using fixing the trans and total_of functions work without writing the is_total and is_trans instances explicitly.
+  induction' xs fixing *, 
   { simp [sorted'],
     intros,
     exact false.elim H },
@@ -68,8 +69,7 @@ end
 lemma sorted_isort [decidable_rel r] [is_trans α r] [is_total α r]: sorted' r (insertion_sort r xs) :=
 begin
   induction' xs,
-  { simp},
-  { simp [sorted_insort, ih] }
+  repeat { simp [sorted_insort, *] }
 end
 
 /- 
@@ -88,28 +88,23 @@ def T_isort [decidable_rel r] : list α → nat
 lemma T_insort_length [decidable_rel r]: T_insort r x xs <= xs.length + 1 :=
 begin
   induction' xs,
-  { simp [T_insort] },
-  { simp [T_insort],
-    split_ifs,
-    { simp},
-    { simp [ih] } }
+  repeat { simp [T_insort] },
+  split_ifs,
+  repeat { simp *},
 end
 
 lemma length_insort [decidable_rel r] : (ordered_insert r x xs).length = xs.length + 1 :=
 begin
   induction' xs,
-  { simp [ordered_insert] },
-  { simp,
-    split_ifs,
-    { simp},
-    { simp [ih] } }
+  repeat { simp [ordered_insert] },
+  split_ifs,
+  repeat { simp *},
 end
 
 lemma length_isort [decidable_rel r] : (insertion_sort r xs).length = xs.length :=
 begin
   induction' xs,
-  { simp},
-  { simp [length_insort, ih] }
+  repeat { simp [length_insort, *] }
 end
 
 /-
@@ -118,15 +113,13 @@ Lemma 2.1 from __Functional Algorithms, Verified!__
 lemma T_isort_length [decidable_rel r]: T_isort r xs <= (xs.length + 1) ^ 2 :=
 begin
   induction' xs fixing *,
-  { simp [T_isort]},
-  { simp [T_isort, T_insort_length, length_isort],
-    show T_isort r xs + T_insort r hd (insertion_sort r xs) + 1 ≤ (xs.length + 1 + 1) ^ 2, by calc
-    T_isort r xs + T_insort r hd (insertion_sort r xs) + 1 ≤ (xs.length + 1) ^ 2 + T_insort r hd (insertion_sort r xs) + 1 : by simp [ih]
-    ... ≤ (xs.length + 1) ^ 2 + ((insertion_sort r xs).length + 1) + 1 : by simp [T_insort_length]
-    ... = (xs.length + 1) ^ 2 + (xs.length + 1) + 1 : by simp [length_isort]
-    ... = xs.length ^2 + 2 * xs.length + xs.length + 3 : by ring
-    ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 3 : by simp 
-    ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 4 : by simp 
-    ... = (xs.length + 1 + 1) ^ 2 : by ring,
-    }
+  repeat { simp [T_isort, T_insort_length, length_isort ]},
+  show T_isort r xs + T_insort r hd (insertion_sort r xs) + 1 ≤ (xs.length + 1 + 1) ^ 2, by calc
+  T_isort r xs + T_insort r hd (insertion_sort r xs) + 1 ≤ (xs.length + 1) ^ 2 + T_insort r hd (insertion_sort r xs) + 1 : by simp [ih]
+  ... ≤ (xs.length + 1) ^ 2 + ((insertion_sort r xs).length + 1) + 1 : by simp [T_insort_length]
+  ... = (xs.length + 1) ^ 2 + (xs.length + 1) + 1 : by simp [length_isort]
+  ... = xs.length ^2 + 2 * xs.length + xs.length + 3 : by ring
+  ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 3 : by simp 
+  ... ≤ xs.length ^2 + 2 * xs.length + xs.length + xs.length + 4 : by simp 
+  ... = (xs.length + 1 + 1) ^ 2 : by ring,
 end

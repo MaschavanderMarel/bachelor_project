@@ -54,8 +54,7 @@ Lemma 4.2 from __Functional Algorithms, Verified!__
 lemma size1_if_complete : complete t → size1 t = 2 ^height t :=
 begin
   induction t with a l r l_ih r_ih,
-  { simp [complete, height, size1] },
-  simp [complete, height, size1 ],
+  repeat { simp [complete, height, size1] },
   intros,
   simp *,
   ring,

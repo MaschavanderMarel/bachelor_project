@@ -16,9 +16,10 @@ variable xs: list α
 /- 
 # Top-Down Merge Sort
 
-The function merge from __Functional Algorithms, Verified!__ is already defined in Lean as merge. 
-The function msort is defined as merge_sort but in a different way. 
-Therefore, it is defined below in the same way making use of the length of the list and drop/take functions, 
+The function merge from __Functional Algorithms, Verified!__ is defined in Lean as merge and is reused. 
+The function msort is defined as merge_sort in Lean but in a different way. 
+Therefore, it is defined below in the same way as in __Functional Algorithms, Verified!__ 
+making use of the length of the list and drop/take functions, 
 so the proof structure of the book can be followed. 
 -/
 
@@ -60,11 +61,9 @@ begin
   simp,
   induction' xs,
   { induction' ys,
-    { simp [merge]},
-    simp [merge] },
+    repeat { simp [merge]},},
   induction' ys,
-  { simp [merge] },
-  simp [merge],
+  repeat { simp [merge] },
   split_ifs,
   { simp [ih] },
   simp only [← list.cons_append, list.perm_cons_append_cons hd_1 (@ih_ys _ _ _ _ ih)]
@@ -82,8 +81,8 @@ Lemma 2.2 from __Functional Algorithms, Verified!__
 -/
 lemma mset_msort [decidable_rel r]: 
   ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
-| xs := begin
-  rw msort,
+| xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
+  rw msort, -- Don't use simp here, because it will keep looping.
   split_ifs,
   { have h1: (take (xs.length / 2) xs).length < xs.length ∧ (drop (xs.length / 2) xs).length < xs.length, from 
     begin
@@ -100,7 +99,7 @@ lemma mset_msort [decidable_rel r]:
       exact nat.sub_lt h1 h, 
     end,
     rw mset_merge,
-    cases h1,
+    cases h1, -- This is needed to have h1_left and h1_right seen by Lean in using_well_founded recursion.
     simp only [mset_msort (take (xs.length/2) xs)],
     simp  [mset_msort (drop (xs.length/2) xs)] }, 
   refl,
@@ -113,12 +112,10 @@ lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]:
   sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
   induction' xs,
-  {  cases ys,
-    { simp [merge] },
-    simp [merge, sorted'], },
+  { cases ys,
+    repeat { simp [merge, sorted'] } },
   induction' ys fixing *,
-  { simp [merge, sorted'], },
-  simp [merge],
+  repeat { simp [merge, sorted'], },
   split_ifs,
   { simp  [sorted', ih, set_merge, and_assoc],
     intros h1 h2 h3,
@@ -156,8 +153,10 @@ begin
   exact h4 y,
 end
 
--- This lemma is used in sorted_msort.
-lemma div_two_eq_zero_or_one {n: ℕ } (h: n/2 = 0): n = 0 ∨  n = 1 :=
+/-
+This lemma is used in sorted_msort.
+-/
+lemma div_two_eq_zero_or_one {n: ℕ } (h: n/2 = 0): n = 0 ∨ n = 1 :=
 begin
   apply classical.by_contradiction,
   intro h1,
@@ -179,7 +178,7 @@ Lemma 2.3 from __Functional Algorithms, Verified!__
 -/
 lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
   ∀ xs: list α, sorted' r (msort r xs)
-| xs := begin
+| xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
   let ys := take (xs.length /2) xs,
   let zs := drop (xs.length / 2) xs,
   rw msort, -- Don't use simp here, because it will keep looping.
@@ -197,10 +196,8 @@ lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
         ... <= xs.length : nat.div_le_self' xs.length 2,
       exact nat.sub_lt h1 h, 
     end,
-    cases h1, -- This is needed to have h1_left and h1_right seen by Lean.
-    simp [sorted_merge],
-    simp only [sorted_msort ys],
-    simp [sorted_msort zs] }, 
+    cases h1, -- This is needed to have h1_left and h1_right seen by Lean in using_well_founded recursion.
+    simp [sorted_merge, sorted_msort ys, sorted_msort zs] }, 
   have h2: 0 = xs.length/2 ∨ xs.length/2 < 0 , from nat.eq_or_lt_of_not_lt h,
   simp at h2,
   have h1: xs.length = 0 ∨ xs.length = 1, from div_two_eq_zero_or_one h2.symm,
@@ -262,16 +259,11 @@ lemma length_merge [decidable_rel r] :
 begin
   induction' xs,
   { induction' ys,
-    { simp [merge], },
-    simp [merge],},
+    repeat { simp [merge], } },
   induction' ys,  
-  { simp [merge]} ,
-  simp [merge],
+  repeat { simp [merge]} ,
   split_ifs,
-  { simp [ih],
-    cc },
-  simp *,
-  cc
+  repeat { simp *, cc },
 end
 
 lemma length_msort [decidable_rel r]:
@@ -309,11 +301,9 @@ lemma C_merge_ub [d: decidable_rel r] : C_merge r xs ys <= xs.length + ys.length
 begin
   induction' xs,
   { cases ys,
-    { simp [C_merge]},
-    simp [C_merge] },
+    repeat { simp [C_merge]} },
   induction' ys fixing *,
-  { simp [C_merge]},
-  simp only [C_merge],
+  repeat { simp [C_merge]},
   split_ifs,
   { have ih': C_merge r xs (hd_1::ys) ≤ xs.length + (hd_1::ys).length, from ih r (hd_1::ys),
     simp at *,
