@@ -11,7 +11,7 @@ set_option trace.simplify.rewrite true
 variable {α : Type*}
 variable r: α → α → Prop
 variable x: α 
-variable xs: list α  
+variables xs ys: list α  
 
 /- 
 # Top-Down Merge Sort
@@ -23,28 +23,27 @@ making use of the length of the list and drop/take functions,
 so the proof structure of the book can be followed. 
 -/
 
-variable ys: list α 
-
 def msort [decidable_rel r]: list α → list α
 | xs := begin
-  apply if h: 0 < xs.length/2 then
-  have (take (xs.length / 2) xs).length < xs.length, from 
+  let n := xs.length,
+  apply if h: 0 < n/2 then
+  have (take (n / 2) xs).length < n, from 
     begin
       simp,
       calc
-        xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
-        ... =  (xs.length / 2) * 2 : by ring
-        ... <=  xs.length : by apply nat.div_mul_le_self,
+        n/2 < n /2 + n/ 2  : nat.lt_add_of_pos_left h
+        ... =  (n / 2) * 2 : by ring
+        ... <=  n : by apply nat.div_mul_le_self,
     end,
-  have (drop (xs.length / 2) xs).length < xs.length, from  
+  have (drop (n / 2) xs).length < n, from  
     begin 
       simp,
-      have h1: 0 < xs.length, from calc
-        0 < xs.length/2 : h
-        ... <= xs.length : nat.div_le_self' xs.length 2,
+      have h1: 0 < n, from calc
+        0 < n/2 : h
+        ... <= n : nat.div_le_self' n 2,
       exact nat.sub_lt h1 h 
     end,
-  merge r (msort (take (xs.length/2) xs)) (msort (drop (xs.length/2) xs))
+  merge r (msort (take (n/2) xs)) (msort (drop (n/2) xs))
   else xs
 end
 using_well_founded {
@@ -83,6 +82,8 @@ lemma mset_msort [decidable_rel r]:
   ∀ xs: list α, (↑ (msort r xs):multiset α) = ↑ xs 
 | xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
   rw msort, -- Don't use simp here, because it will keep looping.
+  let n:= xs.length,
+  simp only [*],
   split_ifs,
   { have h1: (take (xs.length / 2) xs).length < xs.length ∧ (drop (xs.length / 2) xs).length < xs.length, from 
     begin
@@ -181,7 +182,9 @@ lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
 | xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
   let ys := take (xs.length /2) xs,
   let zs := drop (xs.length / 2) xs,
+  let n:= xs.length,
   rw msort, -- Don't use simp here, because it will keep looping.
+  simp only *,
   split_ifs,
   { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
       apply and.intro,
@@ -271,7 +274,9 @@ lemma length_msort [decidable_rel r]:
 | xs := begin
   let ys := take (xs.length /2) xs,
   let zs := drop (xs.length / 2) xs,
+  let n:= xs.length,
   rw msort,
+  simp only *,
   split_ifs,
   { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
       apply and.intro,
