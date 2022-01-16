@@ -8,7 +8,7 @@ set_option eqn_compiler.zeta true
 open tree
 
 variable {α : Type} 
-variables n: ℕ 
+variables {n: ℕ} 
 variables xs zs: list α 
 variable a: α 
 variables t: tree α 
@@ -17,7 +17,7 @@ variables t: tree α
 # Converting a List into an Almost Complete Tree
 Section 4.3.1 from __Functional Algorithms, Verified!__. This section is not included in the Isabelle file.
 
-## Definition
+## Definitions
 -/
 
 def bal [inhabited α]: ℕ → list α → tree α × list α
@@ -61,6 +61,9 @@ def bal' [inhabited α]: ℕ → list α → tree α × list α
   ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd)
   else (nil, xs)
 end
+
+def bal_list [inhabited α]: ℕ → list α → tree α 
+| n xs := (bal' n xs).fst
 
 example [inhabited α] (h: n ≠ 0) : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) :=
 begin
@@ -133,7 +136,8 @@ begin
   sorry
 end
 
-lemma bal_prefix_suffix' [inhabited α]: n <= xs.length ∧ bal' n xs = (t, zs) → xs = inorder t ++ zs ∧ size t = n :=
+lemma bal_prefix_suffix' [inhabited α]: 
+  n <= xs.length ∧ bal' n xs = (t, zs) → xs = inorder t ++ zs ∧ size t = n :=
 begin
   induction n using nat.strong_induction_on with n ih generalizing t zs xs,
   intro h,
@@ -201,7 +205,32 @@ begin
   simp [*, size, nat.sub_add_cancel],
 end
 
-#check @trans
-#check @iff.elim_right
-#check list.length
-#check list.length_tail
+lemma inorder_bal_list_eq_take [inhabited α ] : 
+  n <= xs.length → inorder (bal_list n xs) = list.take n xs :=
+begin
+  intro h,
+  rw [bal_list, bal'],
+
+  split_ifs,
+  { 
+    have h1: bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal'   (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := 
+    begin
+      rw [bal', if_pos h_1],
+    end,
+    have h2:  n <= xs.length ∧ bal' n xs = (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst,
+ (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).snd) → xs = inorder (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst) ++ (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).snd ∧ size (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst) = n, from bal_prefix_suffix' _ _ _ ,
+    simp [h, h1] at h2,
+    cases h2,
+    have h3: (inorder (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst)).length = n, by simp *,
+    have h4: list.take n xs = list.take n (
+  inorder
+      (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst) ++
+    (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).snd), from congr_arg (list.take n) h2_left,
+    rw h4,
+    rw list.take_left' h3 },
+  simp at h_1,
+  rw h_1,
+  simp [list.take_zero]
+end
+
+#check @bal_prefix_suffix'

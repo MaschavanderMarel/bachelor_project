@@ -93,31 +93,6 @@ example : ∃ x, x = 5 :=
     refl
   end
 
-lemma aux {n: ℕ } (h: ¬ n = 0): n / 2 + (n - 1 - n / 2 ) + 1 = n :=
-begin
-  have h1: 0 < n, from nat.pos_of_ne_zero h,
-  have : 1 <= n, by linarith,
-  have : n < n + n, from nat.lt_add_of_pos_left h1,
-  have h2: n < n * 2, by linarith,
-  have h3: 0 < 2, by linarith,
-  have : n/2 < n , from iff.elim_right (nat.div_lt_iff_lt_mul n n h3) h2,
-  have h4: n/2 <= n - 1, by linarith,
-  calc
-    n / 2 + (n - 1 - n / 2 ) + 1 = 1 + (n/2 + (n - 1 - n/2)) : by ring
-    ... = n : by simp [nat.add_sub_of_le h4, *],
-end  
-
-lemma aux2 {m n: ℕ } (h: ¬ n = 0) (h1: n <= m + n/2): 1 <= m :=
-begin
-  have : 0 < n, from nat.pos_of_ne_zero h,
-  have : 1 <= n, by linarith,
-  have : n/2 < n , from sorry,
-  have : n/2 <= n - 1, by linarith,
-  have : 1 <= n - n/2, by by simp [add_le_of_le_tsub_right_of_le, le_tsub_of_add_le_left, *],
-  have: n - n/2 <= m, by simp *,
-  linarith
-end
-
 example {n: ℕ } (h: ¬ n = 0) :n - 1 + 1 = n :=
 begin
   have h1: 0 < n, from nat.pos_of_ne_zero h,
@@ -127,27 +102,16 @@ end
 
 #check @tsub_le_iff_right
 
-namespace hidden
-open nat
-
-def div : ℕ → ℕ → ℕ
-| x y :=
-  if h : 0 < y ∧ y ≤ x then
-    have x - y < x,
-      from nat.sub_lt (lt_of_lt_of_le h.left h.right) h.left,
-    div (x - y) y + 1
-  else
-    0
-
-example (x y : ℕ) :
-  div x y = if 0 < y ∧ y ≤ x then div (x - y) y + 1 else 0 :=
-by rw [div]
-
-example (x y : ℕ) (h : 0 < y ∧ y ≤ x) :
-  div x y = div (x - y) y + 1 :=
+example (x : ℕ) (h : x = 3)  : x + x + x = 9 :=
 begin
-  rw [div],
+  set y := x with h_xy,
   sorry
 end
 
-end hidden
+example (n: ℕ ) (h: 0 < n): n/2 ≠ n :=
+begin
+  by_contradiction,
+ 
+  sorry
+end 
+
