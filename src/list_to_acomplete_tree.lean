@@ -68,6 +68,12 @@ def bal_list [inhabited α]: ℕ → list α → tree α
 def balance_list [inhabited α]: list α → tree α 
 | xs := bal_list xs.length xs
 
+def bal_tree [inhabited α]: ℕ → tree α → tree α 
+| n t := bal_list n (inorder t)
+
+def balance_tree [inhabited α]: tree α → tree α 
+| t := bal_tree (size t) t 
+
 example [inhabited α] (h: n ≠ 0) : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) :=
 begin
   rw [bal'],
@@ -272,10 +278,22 @@ end
 lemma inorder_balance_list_eq_list [inhabited α] : inorder (balance_list xs) = xs :=
 begin
   rw balance_list,
-  have : xs.length <= xs.length, by trivial,
-  have: inorder (bal_list xs.length xs) = list.take xs.length xs, from inorder_bal_list_eq_take xs this,
-  simp at *,
-  assumption,
+  simp [*, inorder_bal_list_eq_take],
+end
+
+lemma inorder_bal_tree_eq_take_inorder [inhabited α]:
+  n <= size t → inorder (bal_tree n t) = list.take n (inorder t) :=
+begin
+  intro h,
+  rw [bal_tree],
+  simp [*, inorder_bal_list_eq_take],
+end
+
+lemma inorder_balance_tree_eq_inorder [inhabited α]: inorder (balance_tree t) = inorder t:=
+begin
+  rw balance_tree,
+  simp [*, inorder_bal_tree_eq_take_inorder],
+  sorry
 end
 
 #check @bal_prefix_suffix'
