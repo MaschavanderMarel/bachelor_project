@@ -65,13 +65,52 @@ end
 def bal_list [inhabited α]: ℕ → list α → tree α 
 | n xs := (bal' n xs).fst
 
+def balance_list [inhabited α]: list α → tree α 
+| xs := bal_list xs.length xs
+
 example [inhabited α] (h: n ≠ 0) : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) :=
 begin
-  rw [bal', if_pos h],
+  rw [bal'],
+  rw  [if_pos h],
 end
 
+example [inhabited α] (h: n ≠ 0) : bal n xs = ((node (bal (n/2) xs).snd.head (bal (n/2) xs).fst (bal (n - 1 - n/2) ((bal (n/2) xs).snd.tail)).fst), (bal (n - 1 - n/2) ((bal (n/2) xs).snd.tail)).snd) :=
+begin
+    have: n/2 < n, begin 
+    have h1: 0 < n, from nat.pos_of_ne_zero h,
+    have h2: 1 < 2, by simp,
+    exact nat.div_lt_self h1 h2,
+  end,
+  have: n - 1 - n/2 < n, begin
+    have h1: 0 < (1 + n/2), by simp [nat.add_one_ne_zero (n/2), nat.add_comm, nat.pos_of_ne_zero],
+    have: n/2 < n, by simp [nat.div_lt_self, nat.pos_of_ne_zero, *],
+    have h2: 1 + n/2 <= n, by linarith,
+    rw nat.sub_sub n 1 (n/2),
+    exact nat.sub_lt_of_pos_le (1 + n/2) n h1 h2,
+  end,
+  rw [bal, dif_pos h],
+  simp,
+  sorry,
+end
+
+example [inhabited α] (h: n ≠ 0) : 
+  let (l, ys) :=  bal (n/2) xs, 
+  (r, zs) := bal (n - 1 - (n/2)) (ys.tail)
+ in
+  bal n xs = ((node ys.head l r), zs)
+ :=
+begin
+  rw [bal],
+  split_ifs,
+  { sorry},
+  simp [_example._match_2, _example._match_1],
+  sorry
+end
+
+
 #eval bal 0 ([]:list ℕ ) 
-#eval bal' 1 [1,2,3]
+#eval bal 3 [1,2,3]
+#eval bal' 3 [1,2,3]
 
 /-
 ## Correctness
@@ -110,13 +149,12 @@ begin
     rw nat.sub_sub n 1 m,
     exact nat.sub_lt_of_pos_le (1 + m) n h1 h2,
   end,
-  let l: tree α := (bal m xs).fst,
-  let ys:= (bal m xs).snd,
-  let r:= (bal m' ys.tail).fst,
+  set l: tree α := (bal m xs).fst with l',
+  set ys:= (bal m xs).snd with ys',
+  set r:= (bal m' ys.tail).fst with r',
   have : bal n xs = ((node ys.head l r), zs), begin
     rw [bal, dif_pos h],
     simp *,
-    -- simp [@bal._match_2 α _inst_1 n h (λ (ys : list α) (this : n - 1 - n / 2 < n), bal (n - 1 - n / 2) ys.tail) ],
     sorry,
   end,
   have : t = (node ys.head l r), by cc,
@@ -210,10 +248,8 @@ lemma inorder_bal_list_eq_take [inhabited α ] :
 begin
   intro h,
   rw [bal_list, bal'],
-
   split_ifs,
-  { 
-    have h1: bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal'   (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := 
+  { have h1: bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal'   (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := 
     begin
       rw [bal', if_pos h_1],
     end,
@@ -231,6 +267,15 @@ begin
   simp at h_1,
   rw h_1,
   simp [list.take_zero]
+end
+
+lemma inorder_balance_list_eq_list [inhabited α] : inorder (balance_list xs) = xs :=
+begin
+  rw balance_list,
+  have : xs.length <= xs.length, by trivial,
+  have: inorder (bal_list xs.length xs) = list.take xs.length xs, from inorder_bal_list_eq_take xs this,
+  simp at *,
+  assumption,
 end
 
 #check @bal_prefix_suffix'
