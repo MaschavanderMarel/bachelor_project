@@ -292,8 +292,7 @@ end
 lemma inorder_balance_tree_eq_inorder [inhabited α]: inorder (balance_tree t) = inorder t:=
 begin
   rw balance_tree,
-  simp [*, inorder_bal_tree_eq_take_inorder],
-  sorry
+  simp [*, inorder_bal_tree_eq_take_inorder, ← length_inorder],
 end
 
 #check @bal_prefix_suffix'
