@@ -5,7 +5,9 @@ import data.set
 import tactic.induction
 import tactic.ring
 import algebra.order.field
+import algebra.order.ring
 import tactic.linarith
+import init.default
 
 set_option trace.simplify.rewrite true
 

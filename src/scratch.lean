@@ -1,5 +1,6 @@
 import utilities
 import data.nat.log
+import data.nat.parity
 
 open list
 open nat
@@ -99,8 +100,56 @@ begin
   exact h2
 end
 
- example (n:ℕ ) (h:¬ n = 0): n - 1 - n/2 < n :=
- begin
-   ring,
-   sorry
- end
+example (n:ℕ ) (h: ¬ n = 0): (n + 1) / 2 = n - 1 - n/2 + 1 := begin
+  rw nat.sub.right_comm n 1 (n/2),
+  have  h1: 1 <= n - n/2, from sorry, --al gedaan
+  rw tsub_add_cancel_of_le h1,
+  have h2: n/2 <= n, from sorry, --al gedaan
+  apply symm,
+  rw nat.sub_eq_iff_eq_add h2,
+  rw nat.succ_div,
+  split_ifs,
+  { 
+    ring,
+    -- simp [nat.bodd_add_div2],
+    have hn: n % 2 = 1, begin
+      -- apply dvd.elim_left h_1,
+      simp [←  nat.two_dvd_ne_zero],
+      by_contradiction,
+      
+      sorry,
+    end,
+    simp [nat.two_mul_odd_div_two, *],
+    sorry}, --makkelijk
+  simp [*],
+  ring,
+  have h3: n%2 = 0, from sorry,
+  have h4: 2∣n, from sorry,
+  rw nat.mul_div_cancel_left' h4,
+end
+
+#check @bit1 
+
+
+example (n:ℕ ) (h: ¬ n = 0): (n + 1) / 2 = n - 1 - n/2 + 1 := 
+begin
+  rw nat.sub.right_comm n 1 (n/2),
+  have  h1: 1 <= n - n/2, from sorry,
+  rw tsub_add_cancel_of_le h1,
+  have h2: n/2 <= n, from sorry,
+  apply symm,
+  rw nat.sub_eq_iff_eq_add h2,
+  cases nat.mod_two_eq_zero_or_one n,
+  { rw nat.succ_div,
+    split_ifs,
+    { 
+      sorry},
+    sorry},
+  rw nat.succ_div,
+  split_ifs,
+  { sorry},
+  sorry
+end
+
+
+#eval bit0 2
