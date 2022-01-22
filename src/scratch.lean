@@ -1,4 +1,5 @@
 import utilities
+import data.nat.log
 
 open list
 open nat
@@ -16,27 +17,6 @@ example (h: 0 < xs.length) : xs.length = 1 + xs.tail.length:=
 begin
   simp [*,list.length, nat.sub_one, add_comm 1, nat.add_one, nat.succ_pred_eq_of_pos],
 end
-
-example (n : nat) : n * 2 = n + n :=
-begin
-  induction n using nat.strong_induction_on with n1 ih ,
-  have ih': n1 < n1 → (λ (n : ℕ), n * 2 = n + n) n1, from ih n1,
-  have h: n1 <= n1, by simp,
-  have h1: n1 < n1 ∨ n1 = n1, by sorry,
-  cases h1,
-  { simp *,},
-  sorry,
-end
-
-example {p : nat → Prop} (n : nat) (h : ∀ n, (∀ m, m < n → p m) → p n) : p n :=
-begin
-  have h1: (∀ (m : ℕ), m < n → p m) → p n, from h n,
-  sorry
-end
-
-#reduce (λ (n : ℕ), n + 0 = n) 
-
-#check nat.strong_induction_on
 
 def bar1 : ℕ × ℕ → ℕ
 | (m, n) := m + n
@@ -93,25 +73,34 @@ example : ∃ x, x = 5 :=
     refl
   end
 
-example {n: ℕ } (h: ¬ n = 0) :n - 1 + 1 = n :=
-begin
-  have h1: 0 < n, from nat.pos_of_ne_zero h,
-  have : 1 <= n, by linarith,
-  simp [*,nat.sub_add_cancel]
-end
-
-#check @tsub_le_iff_right
-
 example (x : ℕ) (h : x = 3)  : x + x + x = 9 :=
 begin
   set y := x with h_xy,
   sorry
 end
 
-example (n: ℕ ) (h: 0 < n): n/2 ≠ n :=
+example {n:ℕ} (h:¬ n = 0): n - 1 - n / 2  ≤ n / 2  :=
 begin
-  by_contradiction,
- 
+  have h1: 2 * n - 2 - n <= n, from sorry,
+  have: (2*n - 2 - n)/2 <= n/2, from nat.div_le_div_right h1,
+  have: (2 * n - 2 - n) / 2 = n - 1 - n/2, by calc
+    (2 * n - 2 - n) / 2 = (2 * n - n - 2) / 2: by rw nat.sub.right_comm (2 * n) 2 n
+    ... = n - 1 - n/2: by sorry,
   sorry
-end 
+end
 
+example {n:ℕ} : n - 1 - n / 2 + 1 ≤ n / 2 + 1  :=
+begin
+  simp,
+  ring,
+  have h2: n < ( n / 2) * 2 + 2, by simp [nat.lt_div_mul_add],
+  rw mul_comm,
+  rw nat.lt_add_one_iff at h2,
+  exact h2
+end
+
+ example (n:ℕ ) (h:¬ n = 0): n - 1 - n/2 < n :=
+ begin
+   ring,
+   sorry
+ end

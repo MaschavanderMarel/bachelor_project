@@ -115,7 +115,7 @@ end
 
 
 #eval bal 0 ([]:list ℕ ) 
-#eval bal 3 [1,2,3]
+#eval bal 2 [1,2,3]
 #eval bal' 3 [1,2,3]
 
 /-
@@ -204,21 +204,20 @@ begin
   have h2: n/2 < n, begin
     exact nat.div_lt_self h1 h1',
   end,  
+  have h3': n/2 <= n, from le_of_lt h2,
   have : n/2 <= n - 1, by linarith,
   have h2' : 1 <= n - n/2, by by simp [add_le_of_le_tsub_right_of_le, le_tsub_of_add_le_left, *],
   have h3: n - 1 - n/2 < n, begin
     have h1: 0 < (1 + n/2), by simp [nat.add_one_ne_zero (n/2), nat.add_comm, nat.pos_of_ne_zero],
-    have h2: 1 + n/2 <= n, by linarith,
+    have h2: 1 + n/2 <= n, from iff.elim_left (le_tsub_iff_right h3') h2',
     rw nat.sub_sub n 1 (n/2),
     exact nat.sub_lt_of_pos_le (1 + n/2) n h1 h2,
   end,
-  have : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := begin
-    rw [bal', if_pos h],
-  end,
+  have : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := by rw [bal', if_pos h],
   have h14: t = (node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), by cc,
   have h13: zs = (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd, by cc,
   simp at ih,
-  have h4: n/2 <= xs.length, by linarith,
+  have h4: n/2 <= xs.length, from trans h3' h_left,
   have h5: bal' (n/2) xs = ((bal' (n/2) xs).fst, (bal' (n/2) xs).snd), by simp,
   have ih': xs = inorder (bal' (n/2) xs).fst ++ (bal' (n/2) xs).snd ∧ size (bal' (n/2) xs).fst = n/2, from ih (n/2) h2 (bal' (n/2) xs).fst (bal' (n/2) xs).snd xs h4 h5,
   cases ih',
@@ -295,4 +294,152 @@ begin
   simp [*, inorder_bal_tree_eq_take_inorder, ← length_inorder],
 end
 
-#check @bal_prefix_suffix'
+lemma bal_length [inhabited α]: 
+  n <= xs.length ∧ bal' n xs = (t, zs) → xs.length = zs.length + n :=
+begin
+  intro h,
+  have : xs = inorder t ++ zs ∧ size t = n, by simp [bal_prefix_suffix' xs zs t h],
+  simp [*, add_comm],
+end
+
+lemma bal_height [inhabited α] :
+  n <= xs.length ∧ bal' n xs = (t, zs) → height t = nat.clog 2 (n + 1):=
+begin
+  induction n using nat.strong_induction_on with n ih generalizing t zs xs,
+  intro h,
+  cases h,
+  by_cases n=0,
+  { simp *,
+    have : bal' 0 xs = (nil, xs) := begin
+      rw [bal', if_neg],
+      simp,
+    end,
+    cc },
+  have h1: 0 < n, from nat.pos_of_ne_zero h,
+  have h2 : 1 <= n, by simp [nat.add_one_le_iff, h1],
+  have h3: n/2 < n, by simp [nat.div_lt_self h1],  
+  have h5: 1 + n/2 <= n, by simp [nat.one_add_le_iff, h3], 
+  have h6: n - 1 - n/2 < n, begin
+    have h7: 0 < (1 + n/2), by simp [nat.add_one_ne_zero (n/2), nat.add_comm, nat.pos_of_ne_zero],
+    rw nat.sub_sub n 1 (n/2),
+    exact nat.sub_lt_of_pos_le (1 + n/2) n h7 h5,
+  end,
+  let l := (bal' (n/2) xs).fst,
+  let ys := (bal' (n/2) xs).snd,
+  let r := (bal' (n - 1 - n/2) ys.tail).fst,
+  let as := (bal' (n - 1 - n/2) ys.tail).snd,
+  have : bal' n xs = ((node ys.head l r), as), by rw [bal', if_pos h],
+  have h8: t = (node ys.head l r), by cc,
+  have h9: zs = as, by cc,
+  simp at ih,
+  have h10: n/2 <= xs.length, from le_of_lt (lt_of_lt_of_le h3 h_left),
+  have h11: bal' (n/2) xs = (l, ys), by simp,
+  have ih': height l = nat.clog 2 (n/2 + 1), from ih (n/2) h3 l ys xs h10 h11,
+  have h12: xs.length = ys.length + n/2, from bal_length xs ys l ⟨ h10, h11⟩ ,
+  have h13: n - 1 - n/2 <= ys.tail.length, from calc
+    n - 1 - n/2 = n - (1 + n/2): by rw nat.sub_sub n 1 (n/2)
+    ... <= xs.length - (1 + n/2) : nat.sub_le_sub_right h_left (1 + n/2)
+    ... = ys.length + n/2 - (1 + n/2): by rw h12
+    ...= ys.length + n/2 - 1 - n/2: by rw ← nat.sub_sub (ys.length + n/2) 1 (n/2)
+    ... = ys.length + n/2 - n/2 - 1: by rw nat.sub.right_comm (ys.length + n/2) 1 (n/2)
+    ... = ys.length - 1: by simp
+    ... = ys.tail.length: by simp,
+  have h14: bal' (n - 1 - n / 2) ys.tail = (r, as), by simp [-tsub_le_iff_right],
+  have ih'': height r = nat.clog 2 ((n - 1 - n/2) + 1), from ih (n - 1 - n/2) h6 r as ys.tail h13 h14,
+  have h15: nat.clog 2 (n - 1 - n / 2 + 1) <= nat.clog 2 (n/2 + 1), begin
+    apply nat.clog_le_clog_of_le,
+    simp,
+    ring,
+    have h16: n < ( n / 2) * 2 + 2, by simp [nat.lt_div_mul_add],
+    rw mul_comm,
+    rw nat.lt_add_one_iff at h16,
+    exact h16
+  end,
+  rw [← ih', ← ih''] at h15,
+  have h17: 2 <= n + 1, by simp [nat.add_le_add_right h2 1],
+  have h18: nat.clog 2 (n + 1) = nat.clog 2 ((n+1 + 2 - 1)/2) + 1, by simp [nat.clog_of_two_le _ h17],
+  have h19: (n + 1 + 2 - 1)/2 = n / 2 + 1 := begin
+    calc
+    (n + 1 + 2 - 1)/2 = ( n + 2) /2 : by ring
+    ... = n/2 + 1: by simp
+  end,
+  rw h19 at h18,
+  calc
+    height t = max (height l) (height r) + 1: by simp [h8, height]
+    ... = height l + 1: by {simp, exact h15}
+    ... = nat.clog 2 (n/2 + 1) + 1 : by rw ih'
+    ... = nat.clog 2 (n + 1): by rw ← h18
+end
+
+lemma bal_min_height [inhabited α] :
+  n <= xs.length ∧ bal' n xs = (t, zs) → min_height t = nat.log 2 (n + 1):=
+begin
+  induction n using nat.strong_induction_on with n ih generalizing t zs xs,
+  intro h,
+  cases h,
+  by_cases n=0,
+  { simp *,
+    have : bal' 0 xs = (nil, xs) := begin
+      rw [bal', if_neg],
+      simp,
+    end,
+    rw h at h_right,
+    have h1: t = nil, by cc,
+    simp [min_height, *] },
+  have h1: 0 < n, from nat.pos_of_ne_zero h,
+  have h2 : 1 <= n, by simp [nat.add_one_le_iff, h1],
+  have h3: n/2 < n, by simp [nat.div_lt_self h1],  
+  have h5: 1 + n/2 <= n, by simp [nat.one_add_le_iff, h3], 
+  have h6: n - 1 - n/2 < n, begin
+    have h7: 0 < (1 + n/2), by simp [nat.add_one_ne_zero (n/2), nat.add_comm, nat.pos_of_ne_zero],
+    rw nat.sub_sub n 1 (n/2),
+    exact nat.sub_lt_of_pos_le (1 + n/2) n h7 h5,
+  end,
+  let l := (bal' (n/2) xs).fst,
+  let ys := (bal' (n/2) xs).snd,
+  let r := (bal' (n - 1 - n/2) ys.tail).fst,
+  let as := (bal' (n - 1 - n/2) ys.tail).snd,
+  have : bal' n xs = ((node ys.head l r), as), by rw [bal', if_pos h],
+  have h8: t = (node ys.head l r), by cc,
+  have h9: zs = as, by cc,
+  simp at ih,
+  have h10: n/2 <= xs.length, from le_of_lt (lt_of_lt_of_le h3 h_left),
+  have h11: bal' (n/2) xs = (l, ys), by simp,
+  have ih': min_height l = nat.log 2 (n/2 + 1), from ih (n/2) h3 l ys xs h10 h11,
+  have h12: xs.length = ys.length + n/2, from bal_length xs ys l ⟨ h10, h11⟩ ,
+  have h13: n - 1 - n/2 <= ys.tail.length, from calc
+    n - 1 - n/2 = n - (1 + n/2): by rw nat.sub_sub n 1 (n/2)
+    ... <= xs.length - (1 + n/2) : nat.sub_le_sub_right h_left (1 + n/2)
+    ... = ys.length + n/2 - (1 + n/2): by rw h12
+    ...= ys.length + n/2 - 1 - n/2: by rw ← nat.sub_sub (ys.length + n/2) 1 (n/2)
+    ... = ys.length + n/2 - n/2 - 1: by rw nat.sub.right_comm (ys.length + n/2) 1 (n/2)
+    ... = ys.length - 1: by simp
+    ... = ys.tail.length: by simp,
+  have h14: bal' (n - 1 - n / 2) ys.tail = (r, as), by simp [-tsub_le_iff_right],
+  have ih'': min_height r = nat.log 2 ((n - 1 - n/2) + 1), from ih (n - 1 - n/2) h6 r as ys.tail h13 h14,
+  have h15: nat.log 2 (n - 1 - n / 2 + 1) <= nat.log 2 (n/2 + 1), begin
+    apply nat.log_le_log_of_le,
+    simp,
+    ring,
+    have h16: n < ( n / 2) * 2 + 2, by simp [nat.lt_div_mul_add],
+    rw mul_comm,
+    rw nat.lt_add_one_iff at h16,
+    exact h16
+  end,
+  rw [← ih', ← ih''] at h15,
+  have h17: 2 <= n + 1, by simp [nat.add_le_add_right h2 1],
+  have h17': 1 < 2, by simp,
+  have h18: nat.log 2 (n + 1) = nat.log 2 ((n+1)/2) + 1, by simp [nat.log_of_one_lt_of_le h17' h17],
+  have h19: (n + 1) / 2 = n - 1 - n/2 + 1 := begin
+    sorry
+  end,
+  rw h19 at h18,
+  calc
+    min_height t = min (min_height l) (min_height r) + 1: by simp [h8, min_height]
+    ... = min_height r + 1: by {simp, exact h15}
+    ... = nat.log 2 (n - 1 - n / 2 + 1) + 1 : by rw ih''
+    ... = nat.log 2 (n + 1): by rw ← h18
+end
+
+#check @nat.log_of_one_lt_of_le
+#check max
