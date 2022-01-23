@@ -15,7 +15,8 @@ variables t: tree α
 
 /-
 # Converting a List into an Almost Complete Tree
-Section 4.3.1 from __Functional Algorithms, Verified!__. This section is not included in the Isabelle file.
+Section 4.3.1 from __Functional Algorithms, Verified!__. 
+This section is not included in the Isabelle file.
 
 ## Definitions
 -/
@@ -43,6 +44,10 @@ def bal [inhabited α]: ℕ → list α → tree α × list α
     ((node ys.head l r), zs)
     else (nil, xs)
 
+/-
+Including nested let expressions in the definition of bal does not seem to work when using the definition in proofs. 
+Therefore an alternative definition bal' is made and used in the proofs.
+-/
 def bal' [inhabited α]: ℕ → list α → tree α × list α
 | n xs := begin
   apply if h: n ≠ 0 then  
@@ -80,107 +85,12 @@ begin
   rw  [if_pos h],
 end
 
-example [inhabited α] (h: n ≠ 0) : bal n xs = ((node (bal (n/2) xs).snd.head (bal (n/2) xs).fst (bal (n - 1 - n/2) ((bal (n/2) xs).snd.tail)).fst), (bal (n - 1 - n/2) ((bal (n/2) xs).snd.tail)).snd) :=
-begin
-    have: n/2 < n, begin 
-    have h1: 0 < n, from nat.pos_of_ne_zero h,
-    have h2: 1 < 2, by simp,
-    exact nat.div_lt_self h1 h2,
-  end,
-  have: n - 1 - n/2 < n, begin
-    have h1: 0 < (1 + n/2), by simp [nat.add_one_ne_zero (n/2), nat.add_comm, nat.pos_of_ne_zero],
-    have: n/2 < n, by simp [nat.div_lt_self, nat.pos_of_ne_zero, *],
-    have h2: 1 + n/2 <= n, by linarith,
-    rw nat.sub_sub n 1 (n/2),
-    exact nat.sub_lt_of_pos_le (1 + n/2) n h1 h2,
-  end,
-  rw [bal, dif_pos h],
-  simp,
-  sorry,
-end
-
-example [inhabited α] (h: n ≠ 0) : 
-  let (l, ys) :=  bal (n/2) xs, 
-  (r, zs) := bal (n - 1 - (n/2)) (ys.tail)
- in
-  bal n xs = ((node ys.head l r), zs)
- :=
-begin
-  rw [bal],
-  split_ifs,
-  { sorry},
-  simp [_example._match_2, _example._match_1],
-  sorry
-end
-
-
-#eval bal 0 ([]:list ℕ ) 
-#eval bal 2 [1,2,3]
-#eval bal' 3 [1,2,3]
-
 /-
 ## Correctness
 
 Lemma 4.9 from __Functional Algorithms, Verified!__
 -/
-lemma bal_prefix_suffix [inhabited α]: n <= xs.length ∧ bal n xs = (t, zs) → xs = inorder t ++ zs ∧ size t = n :=
-begin
-  induction n using nat.strong_induction_on with n ih generalizing t zs,
-  intro h1,
-  cases h1,
-  by_cases n=0,
-  { have h2: bal 0 xs = (t, zs), from eq.subst h h1_right,
-    have h3: bal 0 xs = (nil, xs) := begin
-      rw [bal, dif_neg],
-      simp,
-    end,
-    apply and.intro,
-    { have: t = nil, by cc,
-      simp [inorder, *],
-      cc },
-    simp *,
-    cc },
-  let m: ℕ  := n/2,
-  let m':= n - 1 - m,
-  have h2: m < n, begin
-    have h1: 0 < n, from nat.pos_of_ne_zero h,
-    have h2: 1 < 2, by simp,
-    exact nat.div_lt_self h1 h2,
-  end,  
-  have h3: m' < n, begin
-    have h1: 0 < (1 + m), by simp [nat.add_one_ne_zero m, nat.add_comm, nat.pos_of_ne_zero],
-    have: m < n, by simp [nat.div_lt_self, nat.pos_of_ne_zero, *],
-    have h2: 1 + m <= n, by linarith,
-    simp [m'],
-    rw nat.sub_sub n 1 m,
-    exact nat.sub_lt_of_pos_le (1 + m) n h1 h2,
-  end,
-  set l: tree α := (bal m xs).fst with l',
-  set ys:= (bal m xs).snd with ys',
-  set r:= (bal m' ys.tail).fst with r',
-  have : bal n xs = ((node ys.head l r), zs), begin
-    rw [bal, dif_pos h],
-    simp *,
-    sorry,
-  end,
-  have : t = (node ys.head l r), by cc,
-  simp at ih,
-  have h4: m <= xs.length, by linarith,
-  have h5: bal m xs = (l, ys), begin
-    sorry,
-  end,
-  have ih': xs = inorder l ++ ys ∧ size l = m, from ih m h2 l ys h4 h5,
-  cases ih',
-  -- have h6: 0 < ys.length, from sorry,
-  have h8: n <= m + ys.length, from calc
-    n <= xs.length : h1_left
-    ... = (inorder l ++ ys).length : by rw [ih'_left]
-    ... = m + ys.length: by simp [list.length, ih'_right],
-  have: n - m <= ys.length, by sorry,
-  sorry
-end
-
-lemma bal_prefix_suffix' [inhabited α]: 
+lemma bal_prefix_suffix [inhabited α]: 
   n <= xs.length ∧ bal' n xs = (t, zs) → xs = inorder t ++ zs ∧ size t = n :=
 begin
   induction n using nat.strong_induction_on with n ih generalizing t zs xs,
@@ -198,14 +108,18 @@ begin
       cc },
     simp *,
     cc },
+  let l := (bal' (n/2) xs).fst,
+  let ys := (bal' (n/2) xs).snd,
+  let r := (bal' (n - 1 - n/2) ys.tail).fst,
+  let as := (bal' (n - 1 - n/2) ys.tail).snd,
   have h1: 0 < n, from nat.pos_of_ne_zero h,
-  have : 1 <= n, by linarith,
-  have h1': 1 < 2, by simp,
+  have h1': 1 <= n, by linarith,
+  have h1'': 1 < 2, by simp,
   have h2: n/2 < n, begin
-    exact nat.div_lt_self h1 h1',
+    exact nat.div_lt_self h1 h1'',
   end,  
   have h3': n/2 <= n, from le_of_lt h2,
-  have : n/2 <= n - 1, by linarith,
+  have h4': n/2 <= n - 1, by linarith,
   have h2' : 1 <= n - n/2, by by simp [add_le_of_le_tsub_right_of_le, le_tsub_of_add_le_left, *],
   have h3: n - 1 - n/2 < n, begin
     have h1: 0 < (1 + n/2), by simp [nat.add_one_ne_zero (n/2), nat.add_comm, nat.pos_of_ne_zero],
@@ -213,31 +127,31 @@ begin
     rw nat.sub_sub n 1 (n/2),
     exact nat.sub_lt_of_pos_le (1 + n/2) n h1 h2,
   end,
-  have : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := by rw [bal', if_pos h],
-  have h14: t = (node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), by cc,
-  have h13: zs = (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd, by cc,
+  have : bal' n xs = ((node ys.head l r), as) := by rw [bal', if_pos h],
+  have h14: t = (node ys.head l r), by cc,
+  have h13: zs = as, by cc,
   simp at ih,
   have h4: n/2 <= xs.length, from trans h3' h_left,
-  have h5: bal' (n/2) xs = ((bal' (n/2) xs).fst, (bal' (n/2) xs).snd), by simp,
-  have ih': xs = inorder (bal' (n/2) xs).fst ++ (bal' (n/2) xs).snd ∧ size (bal' (n/2) xs).fst = n/2, from ih (n/2) h2 (bal' (n/2) xs).fst (bal' (n/2) xs).snd xs h4 h5,
+  have h5: bal' (n/2) xs = (l, ys), by simp,
+  have ih': xs = inorder l ++ ys ∧ size l = n/2, from ih (n/2) h2 l ys xs h4 h5,
   cases ih',
-  have h8: n <= (bal' (n/2) xs).snd.length + n/2, from calc
+  have h8: n <= ys.length + n/2, from calc
     n <= (xs).length : h_left
-    ... = (inorder (bal' (n/2) xs).fst ++ (bal' (n/2) xs).snd).length : by cc
-    ... = n/2 + (bal' (n/2) xs).snd.length: by simp [list.length, ih'_right]
-    ...= (bal' (n/2) xs).snd.length + n/2 : by ring,
-  have h5': n - n/2 <= (bal' (n/2) xs).snd.length, by simp *,
-  have h6: (bal' (n/2) xs).snd.length - 1 = (bal' (n/2) xs).snd.tail.length, by simp,
-  have h7: 1 <= (bal' (n/2) xs).snd.length, from trans h2' h5',
-  have h15: 0 < (bal' (n/2) xs).snd.length, by simp [nat.lt_of_succ_le, h7],
-  have : (bal' (n/2) xs).snd.length = (bal' (n/2) xs).snd.tail.length + 1, from iff.elim_left (nat.sub_eq_iff_eq_add h7) h6,
-  have h10: n - n/2 <= (bal' (n/2) xs).snd.tail.length + 1, by calc
-    n - n/2 <= (bal' (n/2) xs).snd.length: by simp only [tsub_le_iff_right, h8]
-    ... = (bal' (n/2) xs).snd.tail.length + 1: by cc,
-  have h11: n - n/2 -1 <= (bal' (n/2) xs).snd.tail.length, by simp only [tsub_le_iff_right, h10],
+    ... = (inorder l ++ ys).length : by cc
+    ... = n/2 + ys.length: by simp [list.length, ih'_right]
+    ...= ys.length + n/2 : by ring,
+  have h5': n - n/2 <= ys.length, by simp [h8],
+  have h6: ys.length - 1 = ys.tail.length, by simp,
+  have h7: 1 <= ys.length, from trans h2' h5',
+  have h15: 0 < ys.length, by simp [nat.lt_of_succ_le, h7],
+  have : ys.length = ys.tail.length + 1, from iff.elim_left (nat.sub_eq_iff_eq_add h7) h6,
+  have h10: n - n/2 <= ys.tail.length + 1, by calc
+    n - n/2 <= ys.length: by simp only [tsub_le_iff_right, h8]
+    ... = ys.tail.length + 1: by cc,
+  have h11: n - n/2 -1 <= ys.tail.length, by simp only [tsub_le_iff_right, h10],
   rw nat.sub.right_comm n (n/2) 1 at h11,
-  have h12: bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail = ((bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst, zs), by simp [h13],
-  have ih'':  (bal' (n/2) xs).snd.tail = inorder (bal' (n - 1 - n/2) (bal' (n/2) xs).snd.tail).fst ++ zs ∧ size (bal' (n - 1 - n/2) (bal' (n/2) xs).snd.tail).fst = n - 1 - n/2, from ih (n - 1 - n/2) h3 (bal' (n - 1 - n/2) (bal' (n/2) xs).snd.tail).fst zs (bal' (n/2) xs).snd.tail h11 h12,
+  have h12: bal' (n - 1 - n / 2) ys.tail = (r, zs), by simp [h13],
+  have ih'':  ys.tail = inorder r ++ zs ∧ size r = n - 1 - n/2, from ih (n - 1 - n/2) h3 r zs ys.tail h11 h12,
   cases ih'',
   apply and.intro,
   { simp [h14, inorder],
@@ -245,7 +159,10 @@ begin
     rw list.cons_head_tail,
     { exact ih'_left },
     exact list.ne_nil_of_length_pos h15 },
-  simp [*, size, nat.sub_add_cancel],
+  simp  [h14, size, ih'_right, ih''_right],
+  calc
+    n / 2 + (n - 1 - n / 2) + 1 = n - 1 + 1: by rw add_tsub_cancel_of_le h4'
+    ... = n : by rw tsub_add_cancel_of_le h1'
 end
 
 lemma inorder_bal_list_eq_take [inhabited α ] : 
@@ -254,19 +171,20 @@ begin
   intro h,
   rw [bal_list, bal'],
   split_ifs,
-  { have h1: bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal'   (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) := 
+  { let l := (bal' (n/2) xs).fst,
+    let ys := (bal' (n/2) xs).snd,
+    let r := (bal' (n - 1 - n/2) ys.tail).fst,
+    let zs := (bal' (n - 1 - n/2) ys.tail).snd,
+    have h1: bal' n xs = ((node ys.head l r), zs) := 
     begin
       rw [bal', if_pos h_1],
     end,
-    have h2:  n <= xs.length ∧ bal' n xs = (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst,
- (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).snd) → xs = inorder (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst) ++ (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).snd ∧ size (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst) = n, from bal_prefix_suffix' _ _ _ ,
+    have h2:  n <= xs.length ∧ bal' n xs = (node ys.head l r,
+ zs) → xs = inorder (node ys.head l r) ++ zs ∧ size (node ys.head l r) = n, from bal_prefix_suffix _ _ _ ,
     simp [h, h1] at h2,
     cases h2,
-    have h3: (inorder (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst)).length = n, by simp *,
-    have h4: list.take n xs = list.take n (
-  inorder
-      (node (bal' (n / 2) xs).snd.head (bal' (n / 2) xs).fst (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).fst) ++
-    (bal' (n - 1 - n / 2) (bal' (n / 2) xs).snd.tail).snd), from congr_arg (list.take n) h2_left,
+    have h3: (inorder (node ys.head l r)).length = n, by simp only [length_inorder, h2_right],
+    have h4: list.take n xs = list.take n (inorder (node ys.head l r) ++ zs), from congr_arg (list.take n) h2_left,
     rw h4,
     rw list.take_left' h3 },
   simp at h_1,
@@ -298,7 +216,7 @@ lemma bal_length [inhabited α]:
   n <= xs.length ∧ bal' n xs = (t, zs) → xs.length = zs.length + n :=
 begin
   intro h,
-  have : xs = inorder t ++ zs ∧ size t = n, by simp [bal_prefix_suffix' xs zs t h],
+  have : xs = inorder t ++ zs ∧ size t = n, by simp [bal_prefix_suffix xs zs t h],
   simp [*, add_comm],
 end
 
@@ -440,7 +358,4 @@ begin
     ... = nat.log 2 (n - 1 - n / 2 + 1) + 1 : by rw ih''
     ... = nat.log 2 (n + 1): by rw ← h18
 end
-
-#check @nat.log_of_one_lt_of_le
-#check max
 

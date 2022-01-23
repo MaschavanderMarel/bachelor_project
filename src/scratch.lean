@@ -152,4 +152,13 @@ begin
 end
 
 
+example {n: ℕ } (h: ¬ n = 0): n / 2 + (n - 1 - n / 2) + 1 = n :=
+begin
+  have h1: n/2 <= n -1, from sorry , --available
+  have h2: 1<=n, from sorry, --available
+  calc
+    n / 2 + (n - 1 - n / 2) + 1 = n - 1 + 1: by rw add_tsub_cancel_of_le h1
+    ... = n : by rw tsub_add_cancel_of_le h2
+end
+
 #eval bit0 2
