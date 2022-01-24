@@ -289,6 +289,19 @@ begin
     ... = nat.clog 2 (n + 1): by rw ← h18
 end
 
+lemma eq_div2_add_div2 {n:ℕ }: (n + 1) / 2 + n /2 = n :=
+begin
+  induction n with n ih,
+  { ring},
+  simp [nat.succ_eq_add_one],
+  ring,
+  simp [nat.succ_eq_add_one],
+  rw add_comm (n/2 + 1),
+  rw ← add_assoc,
+  simp [nat.add_one] at *,
+  exact ih,
+end
+
 lemma bal_min_height [inhabited α] :
   n <= xs.length ∧ bal' n xs = (t, zs) → min_height t = nat.log 2 (n + 1):=
 begin
@@ -349,7 +362,12 @@ begin
   have h17': 1 < 2, by simp,
   have h18: nat.log 2 (n + 1) = nat.log 2 ((n+1)/2) + 1, by simp [nat.log_of_one_lt_of_le h17' h17],
   have h19: (n + 1) / 2 = n - 1 - n/2 + 1 := begin
-    sorry
+    have h21: n / 2 <= n, from le_of_lt h3,
+    have h22: 1 <= n - n / 2, by {rw le_tsub_iff_right h21, exact h5},
+    rw [nat.sub.right_comm n 1 (n/2), tsub_add_cancel_of_le h22 ],
+    apply symm,
+    rw nat.sub_eq_iff_eq_add h21,
+    exact eq_div2_add_div2.symm,
   end,
   rw h19 at h18,
   calc

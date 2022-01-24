@@ -100,36 +100,34 @@ begin
   exact h2
 end
 
-example (n:ℕ ) (h: ¬ n = 0): (n + 1) / 2 = n - 1 - n/2 + 1 := begin
+lemma eq_div2_add_div2 {n:ℕ }: (n + 1) / 2 + n /2 = n :=
+begin
+  induction n with n ih,
+  { ring},
+  simp [succ_eq_add_one],
+  ring,
+  simp [succ_eq_add_one],
+  rw add_comm (n/2 + 1),
+  rw ← add_assoc,
+  simp [add_one] at *,
+  exact ih,
+end
+
+
+
+#check add_assoc
+
+example (n:ℕ ) : (n + 1) / 2 = n - 1 - n/2 + 1 := begin
   rw nat.sub.right_comm n 1 (n/2),
   have  h1: 1 <= n - n/2, from sorry, --al gedaan
   rw tsub_add_cancel_of_le h1,
   have h2: n/2 <= n, from sorry, --al gedaan
   apply symm,
   rw nat.sub_eq_iff_eq_add h2,
-  rw nat.succ_div,
-  split_ifs,
-  { 
-    ring,
-    -- simp [nat.bodd_add_div2],
-    have hn: n % 2 = 1, begin
-      -- apply dvd.elim_left h_1,
-      simp [←  nat.two_dvd_ne_zero],
-      by_contradiction,
-      
-      sorry,
-    end,
-    simp [nat.two_mul_odd_div_two, *],
-    sorry}, --makkelijk
-  simp [*],
-  ring,
-  have h3: n%2 = 0, from sorry,
-  have h4: 2∣n, from sorry,
-  rw nat.mul_div_cancel_left' h4,
+  exact eq_div2_add_div2.symm
 end
 
-#check @bit1 
-
+#check @nat.div
 
 example (n:ℕ ) (h: ¬ n = 0): (n + 1) / 2 = n - 1 - n/2 + 1 := 
 begin
@@ -151,14 +149,8 @@ begin
   sorry
 end
 
-
-example {n: ℕ } (h: ¬ n = 0): n / 2 + (n - 1 - n / 2) + 1 = n :=
+example {n:ℕ } (h: 1 + n /2 <= n) (h1: n/2 <=n): 1 <= n - n / 2 :=
 begin
-  have h1: n/2 <= n -1, from sorry , --available
-  have h2: 1<=n, from sorry, --available
-  calc
-    n / 2 + (n - 1 - n / 2) + 1 = n - 1 + 1: by rw add_tsub_cancel_of_le h1
-    ... = n : by rw tsub_add_cancel_of_le h2
+  rw le_tsub_iff_right h1,
+  exact h
 end
-
-#eval bit0 2
