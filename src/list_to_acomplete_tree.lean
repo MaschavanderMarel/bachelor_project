@@ -220,6 +220,9 @@ begin
   simp [*, add_comm],
 end
 
+/-
+Lemma 4.10 from __Functional Algorithms, Verified!__
+-/
 lemma bal_height [inhabited α] :
   n <= xs.length ∧ bal' n xs = (t, zs) → height t = nat.clog 2 (n + 1):=
 begin
@@ -285,7 +288,7 @@ begin
   calc
     height t = max (height l) (height r) + 1: by simp [h8, height]
     ... = height l + 1: by {simp, exact h15}
-    ... = nat.clog 2 (n/2 + 1) + 1 : by rw ih'
+    ... = nat.clog 2 (n/2 + 1) + 1 : by rw ih' -- There is typo in the proof in __Functional Algorithms, Verified!__. 
     ... = nat.clog 2 (n + 1): by rw ← h18
 end
 
@@ -302,6 +305,9 @@ begin
   exact ih,
 end
 
+/-
+Lemma 4.11 from __Functional Algorithms, Verified!__
+-/
 lemma bal_min_height [inhabited α] :
   n <= xs.length ∧ bal' n xs = (t, zs) → min_height t = nat.log 2 (n + 1):=
 begin
@@ -377,3 +383,38 @@ begin
     ... = nat.log 2 (n + 1): by rw ← h18
 end
 
+/-
+This lemma is not proofed in  __Functional Algorithms, Verified!__,
+but is needed for corollary 4.12
+-/
+lemma clog_sub_log_le_one {n: ℕ } : nat.clog 2 n - nat.log 2 n <= 1 :=
+begin
+  have h: 1 < 2, by simp,
+  cases n,
+  { simp },
+  have h1: 0 < n.succ, by simp, 
+  have h2: 2 ^ nat.log 2 n.succ ≤ n.succ, from (nat.pow_log_le_self h ( nat.succ_pos n)),
+  have h3: n.succ ≤ 2 ^ nat.clog 2 n.succ , from nat.le_pow_clog h n.succ,
+  have h4: n.succ < 2 ^ (nat.log 2 n.succ).succ, from nat.lt_pow_succ_log_self h h1,
+  have h5: 1 <= n.succ, by linarith,
+  cases h5.lt_or_eq,
+  { have h6: 2 ^ (nat.clog 2 n.succ).pred < n.succ, from nat.pow_pred_clog_lt_self h h_1,
+    have h7: 2 ^ (nat.clog 2 n.succ).pred <  2 ^ (nat.log 2 n.succ).succ, from h6.trans h4,
+    rw nat.pow_lt_iff_lt_right _ at h7,
+    simp [tsub_le_iff_right, add_comm 1, nat.le_of_pred_lt h7] },
+  rw ← h_1,
+  simp,
+end
+
+/-
+Corollary 4.12 from __Functional Algorithms, Verified!__
+-/
+lemma bal_acomplete [inhabited α ]: n <= xs.length ∧ bal' n xs = (t, zs) → acomplete t:=
+begin
+  intro h,
+  rw acomplete,
+  have h1: height t = nat.clog 2 (n + 1), from bal_height xs zs t h,
+  have h2: min_height t = nat.log 2 (n + 1), from bal_min_height xs zs t h,
+  rw [h1, h2],
+  exact clog_sub_log_le_one,
+end
