@@ -39,7 +39,7 @@ This definition follows the definition in __Functional Algorithms, Verified!__
 instead of using the predefined function sorted in Lean 
 in order to follow the structure of the proofs.
 -/
-def sorted' [is_total α r] [is_trans α r] : list α → Prop 
+def sorted' [is_linear_order α r] : list α → Prop 
 | [] := true
 | (h::t) := (∀ y ∈ t.to_set, r h y ) ∧ sorted' t
 
@@ -61,7 +61,7 @@ begin
   refl,
 end
 
-lemma sorted'_append [is_trans α r] [is_total α r] : 
+lemma sorted'_append [is_linear_order α r] : 
   sorted' r (xs ++ ys) ↔ sorted' r xs ∧ sorted' r ys ∧ (∀ (x ∈ xs), ∀ (y ∈ ys), r x y) :=
 begin
   induction' xs fixing *,

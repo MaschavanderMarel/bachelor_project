@@ -14,13 +14,13 @@ variable xs: list α
 # Quicksort
 
 The qsort from the library is *not* really quicksort since it doesn't partition the elements in-place.
-Therefore quicksort is defined following the definition from __Functional Algorithms, Verified!__.
+Quicksort is defined here following the definition from __Functional Algorithms, Verified!__.
  -/
 
 /-
 This lemma is used in the definition of quicksort.
 -/
-lemma well_founded_qs [decidable_rel r]:  (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof :=
+lemma well_founded_qs [decidable_rel r]: (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof :=
   begin
     induction xs,
     repeat { simp [list.filter]},
@@ -44,16 +44,16 @@ end
 def quicksort [decidable_rel r]: list α → list α     
 | [] := []
 | (x::xs) :=  
-  have (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs,
-  have (list.filter (λ (y : α), ¬r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs',
-  quicksort (xs.filter (λ y: α, r y x)) ++ [x] ++ quicksort (xs.filter (λ y: α  , ¬ r y x))   
+  have (list.filter (λ y, r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs,
+  have (list.filter (λ y, ¬r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs',
+  quicksort (xs.filter (λ y, r y x)) ++ [x] ++ quicksort (xs.filter (λ y, ¬ r y x))   
 
 /-
 ## Functional Correctness
 -/
 
 lemma mset_quicksort [decidable_rel r]: 
-  ∀ xs: list α,  (↑(quicksort r xs): multiset α)  = (↑xs: multiset α )
+  ∀ xs: list α, (↑(quicksort r xs): multiset α)  = ↑xs
 | [] := by simp only [quicksort]
 | (x::xs) :=  
 begin
@@ -74,7 +74,7 @@ begin
   simp [← set_mset_mset, mset_quicksort],
 end
 
-lemma sorted_quicksort [decidable_rel r] [is_trans α r] [is_total α r] : 
+lemma sorted_quicksort [decidable_rel r] [is_linear_order α r] : 
   ∀ xs, sorted' r (quicksort r xs)
 | [] := by simp [quicksort]
 | (x::xs) := 

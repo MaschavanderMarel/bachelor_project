@@ -3,7 +3,6 @@ import utilities
 open list
 open multiset
 open set
-open list.perm
 open nat
 
 set_option trace.simplify.rewrite true
@@ -22,7 +21,7 @@ as ordered_insert and insertion_sort respectively and are reused.
 ## Functional Correctness
  -/
 
-lemma mset_insort [decidable_rel r] : ((ordered_insert r x xs):multiset α ) =  {x} + ↑xs :=
+lemma mset_insort [decidable_rel r] : (ordered_insert r x xs: multiset α) = {x} + ↑xs :=
 begin
   induction' xs, 
   { refl },
@@ -32,7 +31,7 @@ begin
       simp [← multiset.cons_coe, ih] }
 end
 
-lemma mset_isort [decidable_rel r]: (↑ (list.insertion_sort r xs): multiset α ) = ↑xs :=
+lemma mset_isort [decidable_rel r] : (insertion_sort r xs: multiset α) = ↑xs :=
 begin
   induction' xs,
   { refl },
@@ -40,12 +39,12 @@ begin
     refl }
 end 
 
-lemma set_insort [decidable_rel r]:  (ordered_insert r x xs).to_set  = {x} ∪ xs.to_set  :=
+lemma set_insort [decidable_rel r] : (ordered_insert r x xs).to_set  = {x} ∪ xs.to_set  :=
 begin
   simp [set.insert_def, ← set_mset_mset, mset_insort, multiset.to_set],
 end
 
-lemma sorted_insort [decidable_rel r] [is_total α r] [is_trans α r] : sorted' r (ordered_insert r x xs) = sorted' r xs :=
+lemma sorted_insort [decidable_rel r] [is_linear_order α r] : sorted' r (ordered_insert r x xs) = sorted' r xs :=
 begin
   -- By using fixing the trans and total_of functions work without writing the is_total and is_trans instances explicitly.
   induction' xs fixing *, 
@@ -66,7 +65,7 @@ begin
       exact or.resolve_right (total_of r hd x) h } }
 end
 
-lemma sorted_isort [decidable_rel r] [is_trans α r] [is_total α r]: sorted' r (insertion_sort r xs) :=
+lemma sorted_isort [decidable_rel r] [is_linear_order α r]: sorted' r (insertion_sort r xs) :=
 begin
   induction' xs,
   repeat { simp [sorted_insort, *] }

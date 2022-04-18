@@ -3,7 +3,6 @@ import utilities
 open list
 open multiset
 open set
-open list.perm
 open nat
 
 set_option trace.simplify.rewrite true
@@ -59,8 +58,8 @@ lemma mset_merge [d: decidable_rel r]:
 begin
   simp,
   induction' xs,
-  { induction' ys,
-    repeat { simp [merge]},},
+  { cases ys,
+    repeat { simp [merge] }},
   induction' ys,
   repeat { simp [merge] },
   split_ifs,
@@ -109,7 +108,7 @@ using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
 
-lemma sorted_merge [d: decidable_rel r] [t: is_total α r] [tr: is_trans α r]: 
+lemma sorted_merge [decidable_rel r] [is_linear_order α r]: 
   sorted' r (merge r xs ys) ↔ sorted' r xs ∧ sorted' r ys :=
 begin
   induction' xs,
@@ -177,7 +176,7 @@ end
 /-
 Lemma 2.3 from __Functional Algorithms, Verified!__
 -/
-lemma sorted_msort [decidable_rel r] [is_total α r] [is_trans α r]:
+lemma sorted_msort [decidable_rel r] [is_linear_order α r]:
   ∀ xs: list α, sorted' r (msort r xs)
 | xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
   let ys := take (xs.length /2) xs,
@@ -236,7 +235,7 @@ def C_msort [decidable_rel r]: list α → ℕ
   apply if h: 0 < xs.length / 2 then  
   have (take (xs.length / 2) xs).length < xs.length, from     
     begin
-      simp *,
+      simp,
       calc
         xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
         ... =  (xs.length / 2) * 2 : by ring
@@ -300,7 +299,6 @@ end
 using_well_founded {
   rel_tac := λ_ _, `[exact ⟨_, inv_image.wf length nat.lt_wf⟩],
   dec_tac := tactic.assumption }
-
 
 lemma C_merge_ub [d: decidable_rel r] : C_merge r xs ys <= xs.length + ys.length :=
 begin

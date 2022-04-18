@@ -1,19 +1,16 @@
-import utilities
+  import utilities
 
 open list
 open multiset
 open set
-open list.perm
 open nat
 
 set_option trace.simplify.rewrite true
 
 variables {α : Type*} {κ : Type*}
 variable r: κ → κ → Prop
-variables (x: α) (k: κ ) 
-variable xs: list α
-variable f: α → κ 
-variable P: α → Prop    
+variables (x: α) (k: κ ) (xs: list α)
+variables (f: α → κ) (P: α → Prop)
 
 /- 
 # Insertion Sort w.r.t. Keys and Stability
