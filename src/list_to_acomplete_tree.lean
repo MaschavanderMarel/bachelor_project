@@ -42,11 +42,12 @@ def bal [inhabited α]: ℕ → list α → tree α × list α
     end,
     bal (n - 1 - m) (ys.tail) in 
     ((node ys.head l r), zs)
-    else (nil, xs)
+  else (nil, xs)
 
 /-
 Including nested let expressions in the definition of bal does not seem to work when using the definition in proofs. 
-Therefore an alternative definition bal' is made and used in the proofs.
+Therefore, an alternative, but similar definition bal' without let expression, 
+is made and used in the proofs.
 -/
 def bal' [inhabited α]: ℕ → list α → tree α × list α
 | n xs := begin
@@ -78,12 +79,6 @@ def bal_tree [inhabited α]: ℕ → tree α → tree α
 
 def balance_tree [inhabited α]: tree α → tree α 
 | t := bal_tree (size t) t 
-
-example [inhabited α] (h: n ≠ 0) : bal' n xs = ((node (bal' (n/2) xs).snd.head (bal' (n/2) xs).fst (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).fst), (bal' (n - 1 - n/2) ((bal' (n/2) xs).snd.tail)).snd) :=
-begin
-  rw [bal'],
-  rw  [if_pos h],
-end
 
 /-
 ## Correctness
@@ -212,6 +207,9 @@ begin
   simp [*, inorder_bal_tree_eq_take_inorder, ← length_inorder],
 end
 
+/-
+This lemma is used in lemma 4.10 and 4.11
+-/
 lemma bal_length [inhabited α]: 
   n <= xs.length ∧ bal' n xs = (t, zs) → xs.length = zs.length + n :=
 begin
@@ -288,7 +286,7 @@ begin
   calc
     height t = max (height l) (height r) + 1: by simp [h8, height]
     ... = height l + 1: by {simp, exact h15}
-    ... = nat.clog 2 (n/2 + 1) + 1 : by rw ih' -- There is typo in the proof in __Functional Algorithms, Verified!__. 
+    ... = nat.clog 2 (n/2 + 1) + 1 : by rw ih' 
     ... = nat.clog 2 (n + 1): by rw ← h18
 end
 

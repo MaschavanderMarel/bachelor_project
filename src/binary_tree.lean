@@ -17,7 +17,7 @@ variable f: α → β
 
 A binary tree is already defined in Lean as tree. 
 The difference with __Functional Algorithms, Verified!__ is that a leaf is called nil, 
-and the order of the node is (value, tree, tree) instead of (tree, value, tree). 
+and the order of the node is (α, tree, tree) instead of (tree, α, tree). 
 Since this does not change the structure of the proofs, the Lean definition is reused.
 -/
 

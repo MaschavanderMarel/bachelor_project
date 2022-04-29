@@ -17,9 +17,8 @@ variables xs ys: list α
 
 The function merge from __Functional Algorithms, Verified!__ is defined in Lean as merge and is reused. 
 The function msort is defined as merge_sort in Lean but in a different way. 
-Therefore, it is defined below in the same way as in __Functional Algorithms, Verified!__ 
-making use of the length of the list and drop/take functions, 
-so the proof structure of the book can be followed. 
+Therefore, it is defined below in the same way as in __Functional Algorithms, Verified!__, 
+making use of the length of the list and drop/take functions in order to follow the book's proof structure. 
 -/
 
 def msort [decidable_rel r]: list α → list α
@@ -82,26 +81,26 @@ lemma mset_msort [decidable_rel r]:
 | xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
   rw msort, -- Don't use simp here, because it will keep looping.
   let n:= xs.length,
-  simp only [*],
+  simp only *,
   split_ifs,
-  { have h1: (take (xs.length / 2) xs).length < xs.length ∧ (drop (xs.length / 2) xs).length < xs.length, from 
+  { have h1: (take (n / 2) xs).length < n ∧ (drop (n / 2) xs).length < n, from 
     begin
       apply and.intro,
       { simp,
         calc
-          xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
-          ... =  (xs.length / 2) * 2 : by ring
-          ... <=  xs.length : by apply nat.div_mul_le_self },
+          n / 2 < n / 2 + n / 2  : nat.lt_add_of_pos_left h
+          ... =  (n / 2) * 2 : by ring
+          ... <=  n : by apply nat.div_mul_le_self },
       simp,
-      have h1: 0 < xs.length, from calc
-        0 < xs.length/2 : h
-        ... <= xs.length : nat.div_le_self' xs.length 2,
+      have h1: 0 < n, from calc
+        0 < n / 2 : h
+        ... <= n : nat.div_le_self' xs.length 2,
       exact nat.sub_lt h1 h, 
     end,
     rw mset_merge,
     cases h1, -- This is needed to have h1_left and h1_right seen by Lean in using_well_founded recursion.
-    simp only [mset_msort (take (xs.length/2) xs)],
-    simp  [mset_msort (drop (xs.length/2) xs)] }, 
+    simp only [mset_msort (take (n / 2) xs)],
+    simp  [mset_msort (drop (n / 2) xs)] }, 
   refl,
 end
 using_well_founded {
@@ -179,30 +178,30 @@ Lemma 2.3 from __Functional Algorithms, Verified!__
 lemma sorted_msort [decidable_rel r] [is_linear_order α r]:
   ∀ xs: list α, sorted' r (msort r xs)
 | xs := begin -- This syntax generalises the list in the IH in order for a proof by induction on the computation of msort. 
-  let ys := take (xs.length /2) xs,
-  let zs := drop (xs.length / 2) xs,
   let n:= xs.length,
+  let ys := take (n / 2) xs,
+  let zs := drop (n / 2) xs,
   rw msort, -- Don't use simp here, because it will keep looping.
   simp only *,
   split_ifs,
-  { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
+  { have h1: ys.length < n ∧ zs.length < n, from begin
       apply and.intro,
       { simp,
         calc
-          xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
-          ... =  (xs.length / 2) * 2 : by ring
-          ... <=  xs.length : by apply nat.div_mul_le_self },
+          n / 2 < n / 2 + n / 2  : nat.lt_add_of_pos_left h
+          ... =  (n / 2) * 2 : by ring
+          ... <=  n : by apply nat.div_mul_le_self },
       simp,
-      have h1: 0 < xs.length, from calc
-        0 < xs.length/2 : h
-        ... <= xs.length : nat.div_le_self' xs.length 2,
+      have h1: 0 < n, from calc
+        0 < n /2 : h
+        ... <= n : nat.div_le_self' n 2,
       exact nat.sub_lt h1 h, 
     end,
     cases h1, -- This is needed to have h1_left and h1_right seen by Lean in using_well_founded recursion.
     simp [sorted_merge, sorted_msort ys, sorted_msort zs] }, 
-  have h2: 0 = xs.length/2 ∨ xs.length/2 < 0 , from nat.eq_or_lt_of_not_lt h,
+  have h2: 0 = n / 2 ∨ n / 2 < 0 , from nat.eq_or_lt_of_not_lt h,
   simp at h2,
-  have h1: xs.length = 0 ∨ xs.length = 1, from div_two_eq_zero_or_one h2.symm,
+  have h1: n = 0 ∨ n = 1, from div_two_eq_zero_or_one h2.symm,
   apply or.elim h1,
   { intro h2,
     have h3: xs = list.nil, from list.eq_nil_of_length_eq_zero h2,
@@ -271,28 +270,28 @@ end
 lemma length_msort [decidable_rel r]:
   ∀ xs, (msort r xs).length = xs.length
 | xs := begin
-  let ys := take (xs.length /2) xs,
-  let zs := drop (xs.length / 2) xs,
   let n:= xs.length,
+  let ys := take (n / 2) xs,
+  let zs := drop (n / 2) xs,
   rw msort,
   simp only *,
   split_ifs,
-  { have h1: ys.length < xs.length ∧ zs.length < xs.length, from begin
+  { have h1: ys.length < n ∧ zs.length < n, from begin
       apply and.intro,
       { simp,
         calc
-          xs.length/2 < xs.length /2 + xs.length/ 2  : nat.lt_add_of_pos_left h
-          ... =  (xs.length / 2) * 2 : by ring
-          ... <=  xs.length : by apply nat.div_mul_le_self },
+          n / 2 < n / 2 + n / 2  : nat.lt_add_of_pos_left h
+          ... =  (n / 2) * 2 : by ring
+          ... <=  n : by apply nat.div_mul_le_self },
       simp,
-      have h1: 0 < xs.length, from calc
-        0 < xs.length/2 : h
-        ... <= xs.length : nat.div_le_self' xs.length 2,
+      have h1: 0 < n, from calc
+        0 < n / 2 : h
+        ... <= n : nat.div_le_self' n 2,
       exact nat.sub_lt h1 h, 
     end,
     cases h1,
     simp [length_merge, length_msort ys, length_msort zs, *] at *,
-    have h2: xs.length / 2 <= xs.length, by linarith,
+    have h2: n / 2 <= n, by linarith,
     simp [*, ← nat.add_sub_assoc h2], },
   refl,
 end

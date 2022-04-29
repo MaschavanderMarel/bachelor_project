@@ -20,7 +20,7 @@ Quicksort is defined here following the definition from __Functional Algorithms,
 /-
 This lemma is used in the definition of quicksort.
 -/
-lemma well_founded_qs [decidable_rel r]: (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof :=
+lemma well_founded_qs [decidable_rel r]: (list.filter (λ y, r y x) xs).sizeof < 1 + xs.sizeof :=
   begin
     induction xs,
     repeat { simp [list.filter]},
@@ -32,7 +32,7 @@ lemma well_founded_qs [decidable_rel r]: (list.filter (λ (y), r y x) xs).sizeof
 /-
 This lemma is used in the definition of quicksort.
 -/
-lemma well_founded_qs' [decidable_rel r]: (list.filter (λ (y),¬ r y x) xs).sizeof < 1 + xs.sizeof :=
+lemma well_founded_qs' [decidable_rel r]: (list.filter (λ y,¬ r y x) xs).sizeof < 1 + xs.sizeof :=
 begin
     induction xs,
     repeat { simp [list.filter] },
@@ -44,8 +44,8 @@ end
 def quicksort [decidable_rel r]: list α → list α     
 | [] := []
 | (x::xs) :=  
-  have (list.filter (λ y, r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs,
-  have (list.filter (λ y, ¬r y x) xs).sizeof < 1 + xs.sizeof, by apply well_founded_qs',
+  have (xs.filter (λ y, r y x)).sizeof < 1 + xs.sizeof, by apply well_founded_qs,
+  have (xs.filter (λ y, ¬r y x)).sizeof < 1 + xs.sizeof, by apply well_founded_qs',
   quicksort (xs.filter (λ y, r y x)) ++ [x] ++ quicksort (xs.filter (λ y, ¬ r y x))   
 
 /-
@@ -58,8 +58,8 @@ lemma mset_quicksort [decidable_rel r]:
 | (x::xs) :=  
 begin
   rw quicksort,
-  repeat {rw ← multiset.coe_add} ,
-  have h1: (list.filter (λ (y), r y x) xs).sizeof < 1 + xs.sizeof ∧ (list.filter (λ (y),¬ r y x) xs).sizeof < 1 + xs.sizeof , from begin
+  repeat {rw ← multiset.coe_add},
+  have h1: (list.filter (λ y, r y x) xs).sizeof < 1 + xs.sizeof ∧ (list.filter (λ y, ¬ r y x) xs).sizeof < 1 + xs.sizeof , from begin
     apply and.intro,
     { apply well_founded_qs},
     apply well_founded_qs',

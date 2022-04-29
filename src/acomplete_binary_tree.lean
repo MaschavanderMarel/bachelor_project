@@ -80,29 +80,28 @@ end
 /-
 Used for lemma 4.7
 -/
-lemma pow_lt_lt_clog {mh s : ℕ}: (2 ^ mh < s) → mh < nat.clog 2 s :=
+lemma lt_clog_of_pow_lt {m n : ℕ}: 2 ^ m < n → m < nat.clog 2 n :=
 begin
   intro h,
   have h1: 0 < 2, by simp,
-  induction' mh,
-  { have: 2 <= s, by linarith,
+  induction' m,
+  { have: 2 <= n, by linarith,
     simp [* , nat.clog_pos] },
-  have h2: 2 ^ mh.succ = 2 ^ mh * 2, by ring,
+  have h2: 2 ^ m.succ = 2 ^ m * 2, by ring,
   rw h2 at h,
-  have : 2 ^ mh > 0, by simp,
-  have h3: 2 ^ mh ≤ (s-1)/2 ↔ (2 ^ mh) * 2 ≤ (s-1), from nat.le_div_iff_mul_le (2 ^ mh) (s-1) h1,
-  have h4: 2 ^ mh * 2 ≤ s - 1, from lt_le_sub_one h,
-  have : 1 < s, by linarith,
-  have h5: ¬ s = 0, by linarith,
-  have : 2 ^ mh < (s+1) / 2, by calc
-    2 ^ mh <= (s-1) / 2: iff.elim_right h3 h4
-    ... < ((s-1) / 2) + 1 : by simp
-    ... = (s+1) / 2 : sub_one_div_add_eq_add_one_div h5,
-  have ih': 2 ^ mh < ((s+1)/2) → mh < nat.clog 2 ((s+1) / 2), from ih ,
+  have : 2 ^ m > 0, by simp,
+  have h3: 2 ^ m ≤ (n-1)/2 ↔ (2 ^ m) * 2 ≤ (n-1), from nat.le_div_iff_mul_le (2 ^ m) (n-1) h1,
+  have h4: 2 ^ m * 2 ≤ n - 1, from lt_le_sub_one h,
+  have : 1 < n, by linarith,
+  have h5: ¬ n = 0, by linarith,
+  have : 2 ^ m < (n+1) / 2, by calc
+    2 ^ m <= (n-1) / 2: iff.elim_right h3 h4
+    ... < ((n-1) / 2) + 1 : by simp
+    ... = (n+1) / 2 : sub_one_div_add_eq_add_one_div h5,
+  have ih': 2 ^ m < ((n+1)/2) → m < nat.clog 2 ((n+1) / 2), from ih ,
   rw nat.clog,
   simp [*, ← nat.add_one],
 end
-
 
 /-
 Lemma 4.7 from __Functional Algorithms, Verified!__
@@ -123,37 +122,37 @@ begin
   rw h2 at h3,
   simp [nat.le_pow_iff_clog_le] at h3,
   have h4: 2 ^ min_height t < size1 t, from min_height_size1_if_incomplete t h,
-  have : min_height t < nat.clog 2 (size1 t), from pow_lt_lt_clog h4,
+  have : min_height t < nat.clog 2 (size1 t), from lt_clog_of_pow_lt h4,
   linarith,
 end
 
 /-
 Used for lemma 4.8
 -/
-lemma lt_pow_gt_log {he s: ℕ } (h1: 1 <= s) : s < 2 ^ he → he > nat.log 2 s :=
+lemma gt_log_of_lt_pow {m n: ℕ } (h: 1 <= n) : n < 2 ^ m → m > nat.log 2 n :=
 begin
-  induction' he,
+  induction' m,
   { intro,
     linarith },
   intro h1,
-  have h2: s / 2 < 2 ^ he, from begin
-    have h3: s < 2 ^ he * 2, by calc
-      s < 2 ^ he.succ: h1
-      ... = 2 ^ he * 2 : by ring,
+  have h2: n / 2 < 2 ^ m, from begin
+    have h3: n < 2 ^ m * 2, by calc
+      n < 2 ^ m.succ: h1
+      ... = 2 ^ m * 2 : by ring,
     have h4: 0 < 2, by simp,
-    have: s / 2 < 2 ^ he ↔ s < 2 ^ he * 2, from nat.div_lt_iff_lt_mul s (2 ^ he) h4,
+    have: n / 2 < 2 ^ m ↔ n < 2 ^ m * 2, from nat.div_lt_iff_lt_mul n (2 ^ m) h4,
     exact iff.elim_right this h3,
   end,
   rw nat.log,
   split_ifs,
-  { have : 2 <= s, from h.left,
-    have h3: 1 <= s/2, from begin
+  { have : 2 <= n, from h_1.left,
+    have h3: 1 <= n/2, from begin
       have h1: 0 < 2, by simp,
-      have h2: 1 ≤ s / 2 ↔ 1 * 2 ≤ s, from nat.le_div_iff_mul_le 1 s h1,
+      have h2: 1 ≤ n / 2 ↔ 1 * 2 ≤ n, from nat.le_div_iff_mul_le 1 n h1,
       simp at h2,
       cc,
     end,
-    have ih': he > nat.log 2 (s/2), from ih h3 h2,
+    have ih': m > nat.log 2 (n/2), from ih h3 h2,
     simp only [nat.succ_eq_add_one],
     linarith },
   simp,
@@ -182,6 +181,6 @@ begin
   have h6: nat.log 2 (size1 t) <= nat.log 2 (2 ^ height t), from nat.log_le_log_of_le h5,
   simp [*, nat.log_pow] at h4 h6,
   have h7: size1 t < 2 ^ height t, by apply has_le.le.lt_of_ne h5 (iff.elim_left (iff_false_left h) (complete_iff_size1 t)),
-  have: nat.log 2 (size1 t) < height t, from lt_pow_gt_log (trans (nat.one_le_two_pow (min_height t)) h3) h7,
+  have: nat.log 2 (size1 t) < height t, from gt_log_of_lt_pow (trans (nat.one_le_two_pow (min_height t)) h3) h7,
   linarith ,
 end
